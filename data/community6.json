@@ -1,0 +1,18 @@
+{
+    "reqId": "9c1d1001-b7a6-4f04-931c-6c5cb90040d2",
+    "uniqId": "301E-72D1-3333-86DB-EEC1DE1821A4",
+    "errno": 0,
+    "errmsg": "",
+    "cost": 39,
+    "data": {
+        "fbQueryId": "",
+        "hasMore": 0,
+        "list": [],
+        "page": 1,
+        "pagesize": 10,
+        "resblockCard": null,
+        "topText": "可视区域内为您找到0套房子",
+        "totalCount": 0,
+        "topRichText": "可视区域内为您找到<span style=\"color:#3072f6\">0</span>套房子"
+    }
+}
