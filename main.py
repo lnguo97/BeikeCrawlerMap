@@ -19,7 +19,7 @@ class BeikeMapSpider:
         self.cookies = None
         self.progress = None
         self.db_conn = None
-        self.ds = '20250815'  # datetime.today().strftime(r'%Y%m%d')
+        self.ds = datetime.today().strftime(r'%Y%m%d')
         self.MIN_LATITUTE, self.MAX_LATITUTE = 30.66, 31.89
         self.MIN_LONGITUDE, self.MAX_LONGITUDE = 120.86, 122.20
 
