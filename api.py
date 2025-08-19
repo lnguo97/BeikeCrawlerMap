@@ -27,4 +27,4 @@ async def run_spider(request: Request):
 
 @app.get('/is_spider_running')
 async def run_spider(request: Request):
-    return hasattr(request.app, 'spider')
+    return hasattr(request.app.state, 'spider')

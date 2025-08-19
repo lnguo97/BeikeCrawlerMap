@@ -1,6 +1,7 @@
 import aiofiles
 import asyncio
 import json
+import logging
 import pathlib
 import sqlite3
 import time
@@ -20,18 +21,40 @@ class BeikeMapSpider:
         self.interrupted = None
         self.cookies = None
         self.progress = None
+        self.logger = None
         self.db_conn = None
         self.ds = datetime.today().strftime(r'%Y%m%d')
         self.MIN_LATITUTE, self.MAX_LATITUTE = 30.66, 31.89
         self.MIN_LONGITUDE, self.MAX_LONGITUDE = 120.86, 122.20
 
     def __enter__(self):
+        # initialize logger
+        self.logger = logging.getLogger('spider')
+        self.logger.setLevel(logging.DEBUG)
+        log_file = pathlib.Path(f'log/spider_{self.ds}.log')
+        log_file.parent.mkdir(exist_ok=True, parents=True)
+        file_handler = logging.FileHandler(log_file)
+        file_handler.setLevel(logging.INFO)
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.DEBUG)
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        )
+        file_handler.setFormatter(formatter)
+        console_handler.setFormatter(formatter)
+        self.logger.addHandler(file_handler)
+        self.logger.addHandler(console_handler)
+        self.logger.info(f'logger initialized, output file: {log_file}')
+
         # load cookies
         cookie_path = pathlib.Path('data/cookies.json')
         if cookie_path.exists():
             with open(cookie_path) as f:
                 self.cookies = json.load(f)
-
+            self.logger.info('cookie loaded')
+        else:
+            self.logger.error('cookie file not found')
+            
         # load progress
         self.progress = {
             'district_finished': False,
@@ -45,6 +68,9 @@ class BeikeMapSpider:
                 progress = json.load(f)
             if self.ds in progress:
                 self.progress = progress[self.ds]
+            self.logger.info('progress loaded')
+        else:
+            self.logger.info('progress file not found')
 
         # connect to database
         self.db_conn = sqlite3.connect('data/housing_data.db')
@@ -153,9 +179,9 @@ class BeikeMapSpider:
         if self.interrupted:
             return
         if self.progress['district_finished']:
-            print(f'District list is finished for date {self.ds}')
+            self.logger.info(f'District list is finished for date {self.ds}')
             return
-        print('Crawling district bubble list')
+        self.logger.info('Crawling district bubble list')
         url = self.get_bubble_list_url(
             group_type='district',
             min_latitude=self.MIN_LATITUTE,
@@ -170,7 +196,7 @@ class BeikeMapSpider:
     
     async def crawl_bizcircles(self):
         if self.progress['bizcircle_latitute'] >= self.MAX_LATITUTE:
-            print(f'Bizcircle list is finished for date {self.ds}')
+            self.logger.info(f'Bizcircle list is finished for date {self.ds}')
             return
         step = 0.2
         async with httpx.AsyncClient(headers=self.headers) as client:
@@ -183,7 +209,7 @@ class BeikeMapSpider:
             ):
                 if self.interrupted:
                     return
-                print(f'Crawling bizcircle bubble list: '
+                self.logger.info(f'Crawling bizcircle bubble list: '
                       f'({round(lat, 2)}, {round(lon, 2)})')
                 url = self.get_bubble_list_url(
                     group_type='bizcircle',
@@ -200,7 +226,7 @@ class BeikeMapSpider:
 
     async def crawl_communities(self):
         if self.progress['community_latitute'] >= self.MAX_LATITUTE:
-            print(f'Community list is finished for date {self.ds}')
+            self.logger.info(f'Community list is finished for date {self.ds}')
             return
         step = 0.05
         async with httpx.AsyncClient(headers=self.headers) as client:
@@ -213,7 +239,7 @@ class BeikeMapSpider:
             ):
                 if self.interrupted:
                     return
-                print(f'Crawling community bubble list: '
+                self.logger.info(f'Crawling community bubble list: '
                       f'({round(lat, 2)}, {round(lon, 2)})')
                 url = self.get_bubble_list_url(
                     group_type='community',
@@ -234,7 +260,7 @@ class BeikeMapSpider:
             f"select distinct id from communities where ds = '{self.ds}'"
         ).fetchall()
         if not all_communities:
-            print(f'No comminity found for date {self.ds}')
+            self.logger.info(f'No comminity found for date {self.ds}')
             return
         target_communities = [
             record[0]
@@ -242,7 +268,7 @@ class BeikeMapSpider:
             if record[0] >= self.progress['house_community']
         ]
         if not target_communities:
-            print(f'House list is finished for date {self.ds}')
+            self.logger.info(f'House list is finished for date {self.ds}')
             return
         target_communities.sort()
         async with httpx.AsyncClient(headers=self.headers) as client:
@@ -251,7 +277,7 @@ class BeikeMapSpider:
                 while True:
                     if self.interrupted:
                         return
-                    print(f'Crawling house list for community '
+                    self.logger.info(f'Crawling house list for community '
                           f'{community_id} page {page}')
                     url = self.get_house_list_url(community_id, page)
                     res = await client.get(url)
@@ -269,6 +295,9 @@ class BeikeMapSpider:
                 self.progress['house_community'] = community_id
 
     async def run(self):
+        if self.cookies is None:
+            self.logger.error('cookie not found, cannot start spider')
+            return
         self.interrupted = False
         try:
             await self.crawl_districts()
@@ -276,10 +305,12 @@ class BeikeMapSpider:
             await self.crawl_communities()
             await self.crawl_houses()
         except Exception as e:
-            print(f'Fatal error happened while running the spider: {e}')
-            print('Spider stopped')
+            self.logger.info(
+                f'Fatal error happened while running the spider: {e}'
+            )
+            self.logger.info('Spider stopped')
         else:
             if self.interrupted:
-                print('Spider interrupted')
+                self.logger.info('Spider interrupted')
             else:
-                print('Spider finished')
+                self.logger.info('Spider finished')

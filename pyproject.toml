@@ -9,6 +9,7 @@ dependencies = [
     "httpx>=0.28.1",
     "pandas>=2.3.1",
     "pydoll-python>=2.6.0",
+    "sqlalchemy>=2.0.43",
     "streamlit>=1.48.1",
     "uvicorn>=0.35.0",
 ]
