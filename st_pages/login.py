@@ -11,6 +11,9 @@ from pydoll.browser import Chrome
 from pydoll.protocol.network.types import CookieParam
 
 
+cookie_path = pathlib.Path('data/cookies.json')
+
+
 async def init_browser(
     browser: Chrome, 
     headless: bool = True, 
@@ -59,7 +62,7 @@ async def check_is_login(tab: Tab, msg_area: DeltaGenerator) -> bool:
         login_info = await tab.find(class_name="typeShowUser", timeout=5)
         login_info_text = await login_info.text
         if login_info_text.strip().endswith('退出'):
-            with open('data/cookies.json', mode='w') as f:
+            with open(cookie_path, mode='w') as f:
                 cookies = await tab.get_cookies()
                 cookies = {
                     c['name']: c['value']
@@ -89,9 +92,10 @@ async def main():
             else:
                 img_area.empty()
                 msg_area.text('Login timeout, please try again')
-    with open('data/cookies.json', mode='r') as f:
-        cookies = json.load(f)
-    st.json(cookies)
+    if cookie_path.exists():
+        with open(cookie_path, mode='r') as f:
+            cookies = json.load(f)
+        st.json(cookies)
 
 
 asyncio.run(main())

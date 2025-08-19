@@ -5,8 +5,10 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "fastapi>=0.116.1",
     "httpx>=0.28.1",
     "pandas>=2.3.1",
     "pydoll-python>=2.6.0",
     "streamlit>=1.48.1",
+    "uvicorn>=0.35.0",
 ]

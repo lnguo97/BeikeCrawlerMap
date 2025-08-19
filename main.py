@@ -3,9 +3,6 @@ import pathlib
 import streamlit as st
 
 
-pathlib.Path('config/').mkdir(parents=True, exist_ok=True)
-pathlib.Path('database/').mkdir(parents=True, exist_ok=True)
-
 st.logo('assets/logo.png')
 pg = st.navigation([
     st.Page(
@@ -14,7 +11,7 @@ pg = st.navigation([
         icon=':material/cookie:'
     ),
     st.Page(
-        "st_pages/spider.py", 
+        "st_pages/monitor.py", 
         title="Spider Monitoring", 
         icon=':material/monitoring:'
     ),

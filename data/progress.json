@@ -4,5 +4,11 @@
     "bizcircle_latitute": 31.86,
     "community_latitute": 31.86,
     "house_community": 5011000000263
+  },
+  "20250819": {
+    "district_finished": true,
+    "bizcircle_latitute": 31.06,
+    "community_latitute": 30.66,
+    "house_community": -1
   }
 }

@@ -17,6 +17,7 @@ from pydoll.protocol.network.types import CookieParam
 
 class BeikeMapSpider:
     def __init__(self) -> None:
+        self.interrupted = None
         self.cookies = None
         self.progress = None
         self.db_conn = None
@@ -149,6 +150,8 @@ class BeikeMapSpider:
         df.to_sql(table_name, self.db_conn, if_exists='append')
 
     async def crawl_districts(self):
+        if self.interrupted:
+            return
         if self.progress['district_finished']:
             print(f'District list is finished for date {self.ds}')
             return
@@ -163,7 +166,6 @@ class BeikeMapSpider:
         res = httpx.get(url, headers=self.headers)
         df = pd.DataFrame(res.json()['data']['bubbleList'])
         self.df_to_db(df, 'districts')
-        print(df.head())
         self.progress['district_finished'] = True
     
     async def crawl_bizcircles(self):
@@ -179,6 +181,8 @@ class BeikeMapSpider:
                 max_longitude=self.MAX_LONGITUDE,
                 step=step
             ):
+                if self.interrupted:
+                    return
                 print(f'Crawling bizcircle bubble list: '
                       f'({round(lat, 2)}, {round(lon, 2)})')
                 url = self.get_bubble_list_url(
@@ -192,8 +196,6 @@ class BeikeMapSpider:
                 if res.json()['data']['totalCount'] > 0:
                     df = pd.DataFrame(res.json()['data']['bubbleList'])
                     self.df_to_db(df, 'bizcircles')
-                    print(df.head())
-                # await asyncio.sleep(1)
                 self.progress['bizcircle_latitute'] = round(lat, 2)
 
     async def crawl_communities(self):
@@ -209,6 +211,8 @@ class BeikeMapSpider:
                 max_longitude=self.MAX_LONGITUDE,
                 step=step
             ):
+                if self.interrupted:
+                    return
                 print(f'Crawling community bubble list: '
                       f'({round(lat, 2)}, {round(lon, 2)})')
                 url = self.get_bubble_list_url(
@@ -222,7 +226,6 @@ class BeikeMapSpider:
                 if res.json()['data']['totalCount'] > 0:
                     df = pd.DataFrame(res.json()['data']['bubbleList'])
                     self.df_to_db(df, 'communities')
-                    print(df.head())
                 # await asyncio.sleep(1)
             self.progress['community_latitute'] = round(lat, 2)
             
@@ -230,6 +233,9 @@ class BeikeMapSpider:
         all_communities = self.db_conn.execute(
             f"select distinct id from communities where ds = '{self.ds}'"
         ).fetchall()
+        if not all_communities:
+            print(f'No comminity found for date {self.ds}')
+            return
         target_communities = [
             record[0]
             for record in all_communities
@@ -237,11 +243,14 @@ class BeikeMapSpider:
         ]
         if not target_communities:
             print(f'House list is finished for date {self.ds}')
+            return
         target_communities.sort()
         async with httpx.AsyncClient(headers=self.headers) as client:
             for community_id in target_communities:
                 page = 1
                 while True:
+                    if self.interrupted:
+                        return
                     print(f'Crawling house list for community '
                           f'{community_id} page {page}')
                     url = self.get_house_list_url(community_id, page)
@@ -260,7 +269,17 @@ class BeikeMapSpider:
                 self.progress['house_community'] = community_id
 
     async def run(self):
-        await self.crawl_districts()
-        await self.crawl_bizcircles()
-        await self.crawl_communities()
-        await self.crawl_houses()
+        self.interrupted = False
+        try:
+            await self.crawl_districts()
+            await self.crawl_bizcircles()
+            await self.crawl_communities()
+            await self.crawl_houses()
+        except Exception as e:
+            print(f'Fatal error happened while running the spider: {e}')
+            print('Spider stopped')
+        else:
+            if self.interrupted:
+                print('Spider interrupted')
+            else:
+                print('Spider finished')
