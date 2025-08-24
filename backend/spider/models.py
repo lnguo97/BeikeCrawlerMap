@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import String, Text, Float, Integer, DateTime
+from sqlalchemy import String, Text, Float, Integer, DateTime, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
 
 
@@ -14,20 +14,6 @@ class Cookie(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     crawl_time: Mapped[datetime] = mapped_column(DateTime)
     text: Mapped[str] = mapped_column(Text)
-
-
-class LogRecord(Base):
-    __tablename__ = 'log_records'
-    
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    timestamp: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    level: Mapped[str] = mapped_column(String(20), nullable=False)
-    logger_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    message: Mapped[str] = mapped_column(Text, nullable=False)
-    module: Mapped[str | None] = mapped_column(String(100))
-    line_number: Mapped[int | None] = mapped_column(Integer)
-    function_name: Mapped[str | None] = mapped_column(String(100))
-    exception: Mapped[str | None] = mapped_column(Text)
 
 
 class Bubble(Base):
@@ -56,23 +42,27 @@ class Bubble(Base):
     imageType: Mapped[int | None] = mapped_column(Integer, nullable=True)
     selected: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
+    ds: Mapped[str] = mapped_column(String(8), primary_key=True)
+    group_type: Mapped[str] = mapped_column(String(10), primary_key=True)
+
 
 class BubbleProgress(Base):
     __tablename__ = "bubble_progress"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     ds: Mapped[str] = mapped_column(String(8))
-    entity_type: Mapped[str] = mapped_column(String(10))
-    min_latitute: Mapped[float] = mapped_column(Float)
-    max_latitute: Mapped[float] = mapped_column(Float)
-    min_longitude: Mapped[float] = mapped_column(Float)
-    max_longitude: Mapped[float] = mapped_column(Float)
-    is_finished: Mapped[bool] = mapped_column(Integer, default=0)
+    group_type: Mapped[str] = mapped_column(String(10))
+    min_lat: Mapped[float] = mapped_column(Float)
+    max_lat: Mapped[float] = mapped_column(Float)
+    min_lon: Mapped[float] = mapped_column(Float)
+    max_lon: Mapped[float] = mapped_column(Float)
+    is_finished: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
 class House(Base):
     __tablename__ = "houses"
     
+    id: Mapped[int] = mapped_column(primary_key=True)
     index: Mapped[int | None] = mapped_column(Integer, nullable=True)
     title: Mapped[str | None] = mapped_column(Text, nullable=True)
     desc: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -83,7 +73,8 @@ class House(Base):
     actionUrl: Mapped[str | None] = mapped_column(Text, nullable=True)
     cardType: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    community_id: Mapped[int] = mapped_column(Integer)
+    ds: Mapped[str] = mapped_column(String(8), primary_key=True)
+    community_id: Mapped[int] = mapped_column(Integer, primary_key=True)
 
 
 class HouseProgress(Base):
@@ -92,5 +83,5 @@ class HouseProgress(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     ds: Mapped[str] = mapped_column(String(8))
     community_id: Mapped[str] = mapped_column(String(20))
-    total_page: Mapped[int] = mapped_column(Integer, default=-1)
-    finished_page: Mapped[int] = mapped_column(Integer, default=-1)
+    finished_page: Mapped[int] = mapped_column(Integer, default=0)
+    has_more: Mapped[bool] = mapped_column(Boolean, default=True)

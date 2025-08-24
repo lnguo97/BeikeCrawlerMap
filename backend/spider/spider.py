@@ -1,125 +1,65 @@
-import aiofiles
 import asyncio
-import json
-import logging
-import pathlib
-import sqlite3
-import time
 import typing
 from datetime import datetime
+from itertools import product
+
 
 import httpx
 import pandas as pd
+from sqlalchemy.orm import Session
 
-from pydoll.browser import Chrome
-from pydoll.browser.tab import Tab
-from pydoll.protocol.network.types import CookieParam
+from .utils import init_logger, init_database, user_agent
+from .models import Cookie, Bubble, BubbleProgress, House, HouseProgress
 
 
 class BeikeMapSpider:
     def __init__(self) -> None:
-        self.interrupted = None
-        self.cookies = None
-        self.progress = None
-        self.logger = None
-        self.db_conn = None
         self.ds = datetime.today().strftime(r'%Y%m%d')
-        self.MIN_LATITUTE, self.MAX_LATITUTE = 30.66, 31.89
-        self.MIN_LONGITUDE, self.MAX_LONGITUDE = 120.86, 122.20
+        self.logger = init_logger(f'spider_{self.ds}')
+
+        self.interrupted = False
+        self.headers = None
+        self.db_session = None
+        
+        self.MIN_LAT, self.MAX_LAT = 30.66, 31.89
+        self.MIN_LON, self.MAX_LON = 120.86, 122.20
 
     def __enter__(self):
-        # initialize logger
-        self.logger = logging.getLogger('spider')
-        self.logger.setLevel(logging.DEBUG)
-        log_file = pathlib.Path(f'log/spider_{self.ds}.log')
-        log_file.parent.mkdir(exist_ok=True, parents=True)
-        file_handler = logging.FileHandler(log_file)
-        file_handler.setLevel(logging.INFO)
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.DEBUG)
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        )
-        file_handler.setFormatter(formatter)
-        console_handler.setFormatter(formatter)
-        self.logger.addHandler(file_handler)
-        self.logger.addHandler(console_handler)
-        self.logger.info(f'logger initialized, output file: {log_file}')
-
-        # load cookies
-        cookie_path = pathlib.Path('data/cookies.json')
-        if cookie_path.exists():
-            with open(cookie_path) as f:
-                self.cookies = json.load(f)
-            self.logger.info('cookie loaded')
-        else:
-            self.logger.error('cookie file not found')
-            
-        # load progress
-        self.progress = {
-            'district_finished': False,
-            'bizcircle_latitute': self.MIN_LATITUTE,
-            'community_latitute': self.MIN_LATITUTE,
-            'house_community': -1
-        }
-        progress_path = pathlib.Path('data/progress.json')
-        if progress_path.exists():
-            with open(progress_path) as f:
-                progress = json.load(f)
-            if self.ds in progress:
-                self.progress = progress[self.ds]
-            self.logger.info('progress loaded')
-        else:
-            self.logger.info('progress file not found')
-
         # connect to database
-        self.db_conn = sqlite3.connect('data/housing_data.db')
+        sessionmaker = init_database()
+        self.db_session: Session = sessionmaker()
+
+        # load cookie
+        cookies = self.db_session.query(Cookie).all()
+        if not cookies:
+            raise ValueError('Cookie not found')
+        cookies.sort(key=lambda c: c.crawl_time, reverse=True)
+        self.headers = {
+            'user-agent': user_agent,
+            'cookie': cookies[0].text
+        }
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        # save progress
-        progress_path = pathlib.Path('data/progress.json')
-        if not progress_path.exists():
-            all_progress = {self.ds: self.progress}
-        else:
-            with open(progress_path) as f:
-                all_progress = json.load(f)
-                all_progress[self.ds] = self.progress
-        with open(progress_path, mode='w') as f:
-            json.dump(all_progress, f, indent=2)
-
-        # close database connection
-        self.db_conn.close()
-        return False
-
-    @property
-    def headers(self):
-        return {
-            'user-agent': (
-                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
-                'AppleWebKit/537.36 (KHTML, like Gecko) '
-                'Chrome/138.0.0.0 '
-                'Safari/537.36'
-            ),
-            'cookie': '; '.join([f'{k}={v}' for k, v in self.cookies.items()])
-        }
+        self.db_session.commit()
+        self.db_session.close()
         
     @staticmethod
     def get_bubble_list_url(
         group_type: typing.Literal['district', 'bizcircle', 'community'], 
-        min_latitude: float,
-        max_latitude: float,
-        min_longitude: float,
-        max_longitude: float
+        min_lat: float,
+        max_lat: float,
+        min_lon: float,
+        max_lon: float
     ) -> str:
         params = {
             'cityId': '310000',
             'dataSource': 'ESF',
             'groupType': group_type,
-            'maxLatitude': max_latitude,
-            'minLatitude': min_latitude,
-            'maxLongitude': max_longitude,
-            'minLongitude': min_longitude,
+            'maxLatitude': max_lat,
+            'minLatitude': min_lat,
+            'maxLongitude': max_lon,
+            'minLongitude': min_lon,
         }
         base_url = (
             'https://map.ke.com/proxyApi/i.c-pc-webapi.ke.com/map/bubblelist'
@@ -142,175 +82,215 @@ class BeikeMapSpider:
         return base_url + '?' + param_str
     
     @staticmethod
-    def chunk_area(
-        min_latitute: float, 
-        max_latitute: float, 
-        min_longitude: float,
-        max_longitude: float,
-        step: float
-    ):
-        lat = min_latitute
-        while lat < max_latitute:
-            lon = min_longitude
-            while lon < max_longitude:
-                yield lat, lon
-                lon += step
-            lat += step
+    def float_range(start: float, end: float, step: float, decimal: int = 2):
+        while start < end:
+            yield round(start, decimal)
+            start += step
+    
+    def init_bubble_progress(self):
+        # init district bubble progress
+        if not (
+            self.db_session
+            .query(BubbleProgress)
+            .filter(BubbleProgress.group_type == 'district')
+            .filter(BubbleProgress.ds == self.ds)
+            .first()
+        ):
+            self.db_session.add(
+                BubbleProgress(
+                    ds=self.ds, group_type='district',
+                    min_lat=self.MIN_LAT, max_lat=self.MAX_LAT,
+                    min_lon=self.MIN_LON, max_lon=self.MAX_LON,
+                )
+            )
+            self.db_session.commit()
 
-    def df_to_db(
+        # init bizcircle bubble progress
+        if not (
+            self.db_session
+            .query(BubbleProgress)
+            .filter(BubbleProgress.group_type == 'bizcircle')
+            .filter(BubbleProgress.ds == self.ds)
+            .first()
+        ):
+            step = 0.2
+            lat_range = self.float_range(self.MIN_LAT, self.MAX_LAT, step)
+            lon_range = self.float_range(self.MIN_LON, self.MAX_LON, step)
+            for lat, lon in product(lat_range, lon_range):
+                self.db_session.add(
+                    BubbleProgress(
+                        ds=self.ds, group_type='bizcircle',
+                        min_lat=lat, max_lat=round(lat + step, 2),
+                        min_lon=lon, max_lon=round(lon + step, 2),
+                    )
+                )
+                
+            self.db_session.commit()
+
+        # init community bubble progress
+        if not (
+            self.db_session
+            .query(BubbleProgress)
+            .filter(BubbleProgress.group_type == 'community')
+            .filter(BubbleProgress.ds == self.ds)
+            .first()
+        ):
+            step = 0.05
+            lat_range = self.float_range(self.MIN_LAT, self.MAX_LAT, step)
+            lon_range = self.float_range(self.MIN_LON, self.MAX_LON, step)
+            for lat, lon in product(lat_range, lon_range):
+                self.db_session.add(
+                    BubbleProgress(
+                        ds=self.ds, group_type='community',
+                        min_lat=lat, max_lat=round(lat + step, 2),
+                        min_lon=lon, max_lon=round(lon + step, 2),
+                    )
+                )
+            self.db_session.commit()
+
+    def init_house_progress(self):
+        if not (
+            self.db_session
+            .query(HouseProgress)
+            .filter(HouseProgress.ds == self.ds)
+            .first()
+        ):
+            community_bubbles = (
+                self.db_session
+                .query(Bubble.id)
+                .filter(Bubble.group_type == 'community')
+                .filter(Bubble.ds == self.ds)
+                .all()
+            )
+            for bubble in community_bubbles:
+                progress = HouseProgress(ds=self.ds, community_id=bubble.id)
+                self.db_session.add(progress)
+            self.db_session.commit()
+
+    async def crawl_bubble_data(
         self, 
-        df: pd.DataFrame, 
-        table_name: str, 
-        pk_column: str = 'id'
+        progress: BubbleProgress, 
+        client: httpx.AsyncClient
     ):
-        if len(df) == 0:
-            return
-        df['ds'] = self.ds
-        df.head(0).to_sql(table_name, self.db_conn, if_exists='append')
-        pk_list_str = ', '.join([f"'{i}'" for i in df[pk_column]])
-        self.db_conn.execute(
-            f"delete from {table_name} "
-            f"where {pk_column} in ({pk_list_str})"
-            f"and ds = '{self.ds}';"
+        self.logger.info(
+            f'Crawling {progress.group_type} bubble, '
+            f'latitute {progress.min_lat}-{progress.max_lat}, '
+            f'longitude {progress.min_lon}-{progress.max_lon}'
         )
-        df.to_sql(table_name, self.db_conn, if_exists='append')
+        res = await client.get(
+            url=self.get_bubble_list_url(
+                group_type=progress.group_type,
+                min_lat=progress.min_lat,
+                max_lat=progress.max_lat,
+                min_lon=progress.min_lon,
+                max_lon=progress.max_lon,
+            )
+        )
+        res.raise_for_status()
+        data = res.json()['data']
+        if 'bubbleList' in data:
+            for bubble in data['bubbleList']:
+                if (
+                    self.db_session.query(Bubble)
+                    .filter(Bubble.id == bubble['id'])
+                    .filter(Bubble.ds == self.ds)
+                    .filter(Bubble.group_type == progress.group_type)
+                    .first()
+                ):
+                    continue
+                bubble['ds'] = self.ds
+                bubble['group_type'] = progress.group_type
+                    
+                self.db_session.add(Bubble(**bubble))
+        progress.is_finished = True
+        self.db_session.commit()
 
-    async def crawl_districts(self):
+    async def crawl_bubbles(self):
         if self.interrupted:
             return
-        if self.progress['district_finished']:
-            self.logger.info(f'District list is finished for date {self.ds}')
-            return
-        self.logger.info('Crawling district bubble list')
-        url = self.get_bubble_list_url(
-            group_type='district',
-            min_latitude=self.MIN_LATITUTE,
-            max_latitude=self.MAX_LATITUTE,
-            min_longitude=self.MIN_LONGITUDE,
-            max_longitude=self.MAX_LONGITUDE,
+        progresses = (
+            self.db_session
+            .query(BubbleProgress)
+            .filter(BubbleProgress.ds == self.ds)
+            .filter(BubbleProgress.is_finished == 0)
+            .all()
         )
-        res = httpx.get(url, headers=self.headers)
-        df = pd.DataFrame(res.json()['data']['bubbleList'])
-        self.df_to_db(df, 'districts')
-        self.progress['district_finished'] = True
-    
-    async def crawl_bizcircles(self):
-        if self.progress['bizcircle_latitute'] >= self.MAX_LATITUTE:
-            self.logger.info(f'Bizcircle list is finished for date {self.ds}')
+        if not progresses:
+            self.logger.info(f'All bubbles are crawled for date {self.ds}')
             return
-        step = 0.2
+        max_concurrent = 3
         async with httpx.AsyncClient(headers=self.headers) as client:
-            for lat, lon in self.chunk_area(
-                min_latitute=self.progress['bizcircle_latitute'],
-                max_latitute=self.MAX_LATITUTE,
-                min_longitude=self.MIN_LONGITUDE,
-                max_longitude=self.MAX_LONGITUDE,
-                step=step
-            ):
+            for i in range(0, len(progresses), max_concurrent):
                 if self.interrupted:
                     return
-                self.logger.info(f'Crawling bizcircle bubble list: '
-                      f'({round(lat, 2)}, {round(lon, 2)})')
-                url = self.get_bubble_list_url(
-                    group_type='bizcircle',
-                    min_latitude=round(lat, 2),
-                    max_latitude=round(lat + step, 2),
-                    min_longitude=round(lon, 2),
-                    max_longitude=round(lon + step, 2),
-                )
-                res = await client.get(url)
-                if res.json()['data']['totalCount'] > 0:
-                    df = pd.DataFrame(res.json()['data']['bubbleList'])
-                    self.df_to_db(df, 'bizcircles')
-                self.progress['bizcircle_latitute'] = round(lat, 2)
+                await asyncio.gather(*[
+                    self.crawl_bubble_data(progress, client)
+                    for progress in progresses[i:i + max_concurrent]
+                ])
+                await asyncio.sleep(0.1)
 
-    async def crawl_communities(self):
-        if self.progress['community_latitute'] >= self.MAX_LATITUTE:
-            self.logger.info(f'Community list is finished for date {self.ds}')
+    async def crawl_house_data(
+        self, 
+        progress: HouseProgress, 
+        client: httpx.AsyncClient
+    ):
+        self.logger.info(
+            f'Crawling houses for community {progress.community_id}'
+        )
+        page = progress.finished_page + 1
+        while progress.has_more:
+            
+            url = self.get_house_list_url(progress.community_id, page)
+            res = await client.get(url)
+            house_list = res.json()['data']['list']
+            for house in house_list:
+                house_id = house['actionUrl'].split('/')[-2]
+                if (
+                    self.db_session.query(House)
+                    .filter(House.community_id == progress.community_id)
+                    .filter(House.ds == self.ds)
+                    .filter(House.id == house_id)
+                    .first()
+                ):
+                    continue
+                house['id'] = house_id
+                house['tags'] = '|'.join([tag['desc'] for tag in house['tags']])
+                house['ds'] = self.ds
+                house['community_id'] = progress.community_id
+                self.db_session.add(House(**house))
+            progress.finished_page = page
+            progress.has_more = res.json()['data']['hasMore']
+            self.db_session.commit()
+            page += 1
+        
+    async def crawl_houses(self):
+        if self.interrupted:
             return
-        step = 0.05
+        progresses = (
+            self.db_session
+            .query(HouseProgress)
+            .filter(HouseProgress.ds == self.ds)
+            .filter(HouseProgress.has_more == 1)
+            .all()
+        )
+        if not progresses:
+            self.logger.info(f'All houses are crawled for date {self.ds}')
+            return
+        max_concurrent = 3
         async with httpx.AsyncClient(headers=self.headers) as client:
-            for lat, lon in self.chunk_area(
-                min_latitute=self.progress['community_latitute'],
-                max_latitute=self.MAX_LATITUTE,
-                min_longitude=self.MIN_LONGITUDE,
-                max_longitude=self.MAX_LONGITUDE,
-                step=step
-            ):
+            for i in range(0, len(progresses), max_concurrent):
                 if self.interrupted:
                     return
-                self.logger.info(f'Crawling community bubble list: '
-                      f'({round(lat, 2)}, {round(lon, 2)})')
-                url = self.get_bubble_list_url(
-                    group_type='community',
-                    min_latitude=round(lat, 2),
-                    max_latitude=round(lat + step, 2),
-                    min_longitude=round(lon, 2),
-                    max_longitude=round(lon + step, 2),
-                )
-                res = await client.get(url)
-                if res.json()['data']['totalCount'] > 0:
-                    df = pd.DataFrame(res.json()['data']['bubbleList'])
-                    self.df_to_db(df, 'communities')
-                # await asyncio.sleep(1)
-            self.progress['community_latitute'] = round(lat, 2)
-            
-    async def crawl_houses(self):
-        all_communities = self.db_conn.execute(
-            f"select distinct id from communities where ds = '{self.ds}'"
-        ).fetchall()
-        if not all_communities:
-            self.logger.info(f'No comminity found for date {self.ds}')
-            return
-        target_communities = [
-            record[0]
-            for record in all_communities
-            if record[0] >= self.progress['house_community']
-        ]
-        if not target_communities:
-            self.logger.info(f'House list is finished for date {self.ds}')
-            return
-        target_communities.sort()
-        async with httpx.AsyncClient(headers=self.headers) as client:
-            for community_id in target_communities:
-                page = 1
-                while True:
-                    if self.interrupted:
-                        return
-                    self.logger.info(f'Crawling house list for community '
-                          f'{community_id} page {page}')
-                    url = self.get_house_list_url(community_id, page)
-                    res = await client.get(url)
-                    house_list = res.json()['data']['list']
-                    for house in house_list:
-                        house['tags'] = '|'.join([
-                            tag['desc'] for tag in house['tags']
-                        ])
-                    df = pd.DataFrame(house_list)
-                    self.df_to_db(df, 'houses', pk_column='actionUrl')
-                    if res.json()['data']['hasMore'] == 0:
-                        break
-                    page += 1
-                    # await asyncio.sleep(1)
-                self.progress['house_community'] = community_id
+                await asyncio.gather(*[
+                    self.crawl_house_data(progress, client)
+                    for progress in progresses[i:i + max_concurrent]
+                ])
+                await asyncio.sleep(0.1)
+
 
     async def run(self):
-        if self.cookies is None:
-            self.logger.error('cookie not found, cannot start spider')
-            return
-        self.interrupted = False
-        try:
-            await self.crawl_districts()
-            await self.crawl_bizcircles()
-            await self.crawl_communities()
-            await self.crawl_houses()
-        except Exception as e:
-            self.logger.info(
-                f'Fatal error happened while running the spider: {e}'
-            )
-            self.logger.info('Spider stopped')
-        else:
-            if self.interrupted:
-                self.logger.info('Spider interrupted')
-            else:
-                self.logger.info('Spider finished')
+        # self.init_bubble_progress()
+        # await self.crawl_bubbles()
+        self.init_house_progress()
+        await self.crawl_houses()
+

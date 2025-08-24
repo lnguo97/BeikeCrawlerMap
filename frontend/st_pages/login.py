@@ -1,101 +1,73 @@
 import asyncio
+import base64
 import json
+import os
 import pathlib
 import time
 
+import httpx
 import streamlit as st
-from streamlit.delta_generator import DeltaGenerator
-
-from pydoll.browser.tab import Tab
-from pydoll.browser import Chrome
-from pydoll.protocol.network.types import CookieParam
 
 
-cookie_path = pathlib.Path('data/cookies.json')
+def main():
+    base_url = os.getenv('BACKEND_URL') or 'http://localhost:8000'
 
-
-async def init_browser(
-    browser: Chrome, 
-    headless: bool = True, 
-    cookies: list[dict] = None
-) -> Tab:
-    browser.options.headless = headless
-    browser.options.add_argument(
-        '--user-agent='
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
-        'AppleWebKit/537.36 (KHTML, like Gecko) '
-        'Chrome/138.0.0.0 '
-        'Safari/537.36'
-    )
-    tab = await browser.start()
-    await browser.set_window_maximized()
-    if cookies is not None:
-        await tab.go_to('https://sh.ke.com/')
-        await tab.set_cookies([
-            CookieParam(**cookie) for cookie in cookies
-        ])
-        await tab.refresh()
-    return tab
-
-
-async def crawl_qr_code(tab: Tab, img_area: DeltaGenerator) -> None:
-    await tab.go_to('https://sh.ke.com/')
-    login_btn = await tab.find(class_name="btn-login", timeout=5)
-    await login_btn.click()
-    qr_login_btn = await tab.query(
-        '//*[@id="loginModel"]/div[2]/div[2]/div[4]/div[1]/ul/li[1]',
-        timeout=5
-    )
-    await qr_login_btn.click()
-    await asyncio.sleep(2)
-    qr_img = await tab.find(class_name='qrcode_pic_container', timeout=5)
-    pathlib.Path('temp/').mkdir(parents=True, exist_ok=True)
-    await qr_img.take_screenshot('temp/qr_code.png', quality=200)
-    with open('temp/qr_code.png', 'rb') as f:
-        img_area.image(f.read())
-
-
-async def check_is_login(tab: Tab, msg_area: DeltaGenerator) -> bool:
-    is_login = False
-    countdown_start = time.time()
-    while not is_login and time.time() < countdown_start + 30:
-        login_info = await tab.find(class_name="typeShowUser", timeout=5)
-        login_info_text = await login_info.text
-        if login_info_text.strip().endswith('退出'):
-            with open(cookie_path, mode='w') as f:
-                cookies = await tab.get_cookies()
-                cookies = {
-                    c['name']: c['value']
-                    for c in cookies if c['domain'] == '.ke.com'
-                }
-                json.dump(cookies, f, indent=4)
-            is_login = True
-        time_left = int(30 - (time.time() - countdown_start))
-        msg_area.text(f'Expire in {time_left} seconds')
-        await asyncio.sleep(1)
-    return is_login
-
-
-async def main():
     st.title('Login Cookies')
-    st.button('Login', icon=':material/login:', key='login_btn')
+    with st.container(
+        horizontal=True, 
+        horizontal_alignment="left", 
+        vertical_alignment='center'
+    ):
+        st.button('Login', icon=':material/login:', key='login_btn')
+        st.toggle('Show browser', value=False, key='show_browser')
+    img_area = st.empty()
+    msg_area = st.empty()
+
     if st.session_state.login_btn:
-        async with Chrome() as browser:
-            tab = await init_browser(browser, headless=True)
-            img_area = st.empty()
-            msg_area = st.empty()
-            with st.spinner('Crawling QR code...'):
-                await crawl_qr_code(tab, img_area)
-            is_login = await check_is_login(tab, msg_area)
+        # crawl qr code
+        with st.spinner('Crawling QR code...'):
+            res = httpx.get(
+                f'{base_url}/login_qr_code', 
+                params={'headless': not st.session_state.show_browser}
+            )
+            try:
+                res.raise_for_status()
+            except Exception as e:
+                st.exception(e)
+                httpx.post(f'{base_url}/stop_browser')
+                return
+            img_area.image(base64.b64decode(res.json()['qr_code']))
+        
+        # check login status
+        is_login = False
+        start = time.time()
+        while not is_login and time.time() < start + 30:
+            res = httpx.get(f'{base_url}/login_status')
+            try:
+                res.raise_for_status()
+            except Exception as e:
+                st.exception(e)
+                httpx.post(f'{base_url}/stop_browser')
+                return
+            is_login = res.json()['is_login']
             if is_login:
-                st.rerun()
-            else:
-                img_area.empty()
-                msg_area.text('Login timeout, please try again')
-    if cookie_path.exists():
-        with open(cookie_path, mode='r') as f:
-            cookies = json.load(f)
-        st.json(cookies)
+                httpx.post(f'{base_url}/save_cookie')
+                break
+            time_left = int(30 - (time.time() - start))
+            msg_area.text(f'Expire in {time_left} seconds')
+            time.sleep(1)
+
+        # chech final result
+        if not is_login:
+            msg_area.text('Login timeout after 30s')
+        else:
+            msg_area.text('Login successfully')
+        img_area.empty()
+        httpx.post(f'{base_url}/stop_browser')
+
+    res = httpx.get(f'{base_url}/cookie')
+    res.raise_for_status()
+    st.json(res.json())
 
 
-asyncio.run(main())
+main()
