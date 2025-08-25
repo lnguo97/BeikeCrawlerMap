@@ -16,8 +16,11 @@ class Cookie(Base):
     text: Mapped[str] = mapped_column(Text)
 
 
-class Bubble(Base):
-    __tablename__ = "bubbles"
+class Community(Base):
+    __tablename__ = "communities"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    ds: Mapped[str] = mapped_column(String(8), primary_key=True)
     
     index: Mapped[int | None] = mapped_column(Integer, nullable=True)
     fullSpell: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -35,23 +38,29 @@ class Bubble(Base):
     entityId: Mapped[str | None] = mapped_column(Text, nullable=True)
     entityType: Mapped[str | None] = mapped_column(Text, nullable=True)
     hideHouseCount: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str | None] = mapped_column(Text, nullable=True)
     longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
     latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
     imageType: Mapped[int | None] = mapped_column(Integer, nullable=True)
     selected: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    ds: Mapped[str] = mapped_column(String(8), primary_key=True)
-    group_type: Mapped[str] = mapped_column(String(10), primary_key=True)
+    is_detail_crawled: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    main_title: Mapped[str | None] = mapped_column(Text, nullable=True)
+    sub_title: Mapped[str | None] = mapped_column(Text, nullable=True)
+    block_name: Mapped[str | None] = mapped_column(Text, nullable=True)
+    follow_cnt: Mapped[str | None] = mapped_column(Text, nullable=True)
+    unit_price: Mapped[str | None] = mapped_column(Text, nullable=True)
+    price_desc: Mapped[str | None] = mapped_column(Text, nullable=True)
+    info: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
-class BubbleProgress(Base):
-    __tablename__ = "bubble_progress"
+class CommunityProgress(Base):
+    __tablename__ = "community_progresses"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     ds: Mapped[str] = mapped_column(String(8))
-    group_type: Mapped[str] = mapped_column(String(10))
+
     min_lat: Mapped[float] = mapped_column(Float)
     max_lat: Mapped[float] = mapped_column(Float)
     min_lon: Mapped[float] = mapped_column(Float)
@@ -63,6 +72,9 @@ class House(Base):
     __tablename__ = "houses"
     
     id: Mapped[int] = mapped_column(primary_key=True)
+    ds: Mapped[str] = mapped_column(String(8), primary_key=True)
+    community_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+
     index: Mapped[int | None] = mapped_column(Integer, nullable=True)
     title: Mapped[str | None] = mapped_column(Text, nullable=True)
     desc: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -73,12 +85,25 @@ class House(Base):
     actionUrl: Mapped[str | None] = mapped_column(Text, nullable=True)
     cardType: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    ds: Mapped[str] = mapped_column(String(8), primary_key=True)
-    community_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    is_detail_crawled: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    main_title: Mapped[str | None] = mapped_column(Text, nullable=True)
+    sub_title: Mapped[str | None] = mapped_column(Text, nullable=True)
+    district_name: Mapped[str | None] = mapped_column(Text, nullable=True)
+    block_name: Mapped[str | None] = mapped_column(Text, nullable=True)
+    follow_cnt: Mapped[str | None] = mapped_column(Text, nullable=True)
+    total_price: Mapped[str | None] = mapped_column(Text, nullable=True)
+    unit_price: Mapped[str | None] = mapped_column(Text, nullable=True)
+    room_main_info: Mapped[str | None] = mapped_column(Text, nullable=True)
+    room_sub_info: Mapped[str | None] = mapped_column(Text, nullable=True)
+    type_main_info: Mapped[str | None] = mapped_column(Text, nullable=True)
+    type_sub_info: Mapped[str | None] = mapped_column(Text, nullable=True)
+    area_main_info: Mapped[str | None] = mapped_column(Text, nullable=True)
+    area_sub_info: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
 class HouseProgress(Base):
-    __tablename__ = "house_progress"
+    __tablename__ = "house_progresses"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     ds: Mapped[str] = mapped_column(String(8))
