@@ -4,4 +4,4 @@ pydoll-python
 sqlalchemy
 httpx
 pandas
-beautifulsoup
+beautifulsoup4

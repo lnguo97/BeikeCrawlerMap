@@ -6,7 +6,7 @@ from itertools import product
 
 import httpx
 import pandas as pd
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from sqlalchemy.orm import Session
 
 from .utils import init_logger, init_database, user_agent
@@ -97,7 +97,7 @@ class BeikeMapSpider:
             self.db_session.commit()
 
     async def crawl_community_list_data(
-        self, 
+        self,
         progress: CommunityProgress, 
         client: httpx.AsyncClient
     ):
@@ -126,7 +126,6 @@ class BeikeMapSpider:
                 ):
                     continue
                 bubble['ds'] = self.ds
-                bubble['group_type'] = progress.group_type
                 self.db_session.add(Community(**bubble))
         progress.is_finished = True
         self.db_session.commit()
@@ -153,7 +152,21 @@ class BeikeMapSpider:
                     self.crawl_community_list_data(progress, client)
                     for progress in progresses[i:i + max_concurrent]
                 ])
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(0.5)
+
+    @staticmethod
+    def get_element_text(
+        element: BeautifulSoup | Tag | None, 
+        selector: str | None = None
+    ) -> str | None:
+        if element is None:
+            return None
+        if selector is None:
+            return element.get_text(strip=True)
+        target = element.select_one(selector)
+        if target is None:
+            return None
+        return target.get_text(strip=True)
 
     async def crawl_community_detail_data(
         self, 
@@ -166,22 +179,29 @@ class BeikeMapSpider:
         soup = BeautifulSoup(res.content, 'html.parser')
 
         title = soup.select_one('.title')
-        main_title = title.select_one('.main').get_text(strip=True)
-        sub_title = title.select_one('.sub').get_text(strip=True)
+        main_title = self.get_element_text(title, '.main')
+        sub_title = self.get_element_text(title, '.sub')
 
-        catalogs = soup.select_one('.intro.clear').find_all('a')
-        block_name = catalogs[2].get_text(strip=True)
+        catalog = soup.select_one('.intro.clear')
+        if catalog is not None: 
+            catalogs = catalog.find_all('a')
+            block_name = (
+                self.get_element_text(catalogs[2])
+                if len(catalogs) > 2 else None
+            )
+        else:
+            block_name = None
 
-        follow_cnt = soup.find(id='favCount').get_text(strip=True)
+        follow_cnt = self.get_element_text(soup.find(id='favCount'))
 
-        unit_price = soup.select_one('.xiaoquUnitPrice').get_text(strip=True)
-        price_desc = soup.select_one('.xiaoquUnitPriceDesc').get_text(strip=True)
+        unit_price = self.get_element_text(soup, '.xiaoquUnitPrice')
+        price_desc = self.get_element_text(soup, '.xiaoquUnitPriceDesc')
 
         info = {}
         info_items = soup.select('.xiaoquInfoItem')
         for item in info_items:
-            label = item.select_one('.xiaoquInfoLabel').get_text(strip=True)
-            content = item.select_one('.xiaoquInfoContent').get_text(strip=True)
+            label = self.get_element_text(item, '.xiaoquInfoLabel')
+            content = self.get_element_text(item, '.xiaoquInfoContent')
             info[label] = content
 
         community.main_title = main_title
@@ -211,7 +231,7 @@ class BeikeMapSpider:
             return
         max_concurrent = 3
         headers = {'user-agent': user_agent}
-        async with httpx.AsyncClient(headers=headers) as client:
+        async with httpx.AsyncClient(headers=headers, timeout=10) as client:
             for i in range(0, len(communities), max_concurrent):
                 if self.interrupted:
                     return
@@ -219,7 +239,7 @@ class BeikeMapSpider:
                     self.crawl_community_detail_data(community, client)
                     for community in communities[i:i + max_concurrent]
                 ])
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(0.5)
 
     @staticmethod
     def get_house_list_url(community_id: int, page: int):
@@ -308,7 +328,7 @@ class BeikeMapSpider:
                     self.crawl_house_list_data(progress, client)
                     for progress in progresses[i:i + max_concurrent]
                 ])
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(0.5)
 
     async def crawl_house_detail_data(
         self, 
@@ -321,41 +341,51 @@ class BeikeMapSpider:
         soup = BeautifulSoup(res.content, 'html.parser')
 
         title = soup.select_one('.title')
-        main_title = title.select_one('.main').get_text(strip=True)
-        sub_title = title.select_one('.sub').get_text(strip=True)
+        main_title = self.get_element_text(title, '.main')
+        sub_title = self.get_element_text(title, '.sub')
 
-        catalogs = soup.select_one('.intro.clear').find_all('a')
-        district_name = catalogs[2].get_text(strip=True)
-        block_name = catalogs[3].get_text(strip=True)
+        catalog = soup.select_one('.intro.clear')
+        if catalog is not None:
+            catalogs = catalog.find_all('a')
+            district_name = (
+                self.get_element_text(catalogs[2])
+                if len(catalogs) > 2 else None
+            )
+            block_name = (
+                self.get_element_text(catalogs[3])
+                if len(catalogs) > 3 else None
+            )
+        else:
+            district_name = None
+            block_name = None
         
-        follow_cnt = soup.find(id='favCount').get_text(strip=True)
+        follow_cnt = self.get_element_text(soup.find(id='favCount'))
 
         price = soup.select_one('.price-container')
-        total_price = (
-            price.select_one('.total').get_text(strip=True) + 
-            price.select_one('.unit').get_text(strip=True)
-        )
-        unit_price = price.select_one('.unitPrice').get_text(strip=True)
+        total_price_num = self.get_element_text(price, '.total')
+        total_price_unit = self.get_element_text(price, '.unit')
+        unit_price = self.get_element_text(price, '.unitPrice')
 
         house_info = soup.select_one('.houseInfo')
         room_info = house_info.select_one('.room')
-        room_main_info = room_info.select_one('.mainInfo').get_text(strip=True)
-        room_sub_info = room_info.select_one('.subInfo').get_text(strip=True)
+        room_main_info = self.get_element_text(room_info, '.mainInfo')
+        room_sub_info = self.get_element_text(room_info, '.subInfo')
 
         type_info = house_info.select_one('.type')
-        type_main_info = type_info.select_one('.mainInfo').get_text(strip=True)
-        type_sub_info = type_info.select_one('.subInfo').get_text(strip=True)
+        type_main_info = self.get_element_text(type_info, '.mainInfo')
+        type_sub_info = self.get_element_text(type_info, '.subInfo')
 
         area_info = house_info.select_one('.area')
-        area_main_info = area_info.select_one('.mainInfo').get_text(strip=True)
-        area_sub_info = area_info.select_one('.subInfo').get_text(strip=True)
+        area_main_info = self.get_element_text(area_info, '.mainInfo')
+        area_sub_info = self.get_element_text(area_info, '.subInfo')
 
         house.main_title = main_title
         house.sub_title = sub_title
         house.district_name = district_name
         house.block_name = block_name
         house.follow_cnt = follow_cnt
-        house.total_price = total_price
+        house.total_price_num = total_price_num
+        house.total_price_unit = total_price_unit
         house.unit_price = unit_price
         house.room_main_info = room_main_info
         house.room_sub_info = room_sub_info
@@ -383,7 +413,7 @@ class BeikeMapSpider:
             return
         max_concurrent = 3
         headers = {'user-agent': user_agent}
-        async with httpx.AsyncClient(headers=headers) as client:
+        async with httpx.AsyncClient(headers=headers, timeout=10) as client:
             for i in range(0, len(houses), max_concurrent):
                 if self.interrupted:
                     return
@@ -391,7 +421,7 @@ class BeikeMapSpider:
                     self.crawl_house_detail_data(house, client)
                     for house in houses[i:i + max_concurrent]
                 ])
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(0.5)
 
     async def run(self):
         self.init_community_progress()

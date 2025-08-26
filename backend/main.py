@@ -7,9 +7,15 @@ from fastapi import FastAPI, Request, BackgroundTasks, HTTPException
 from pydoll.browser import Chrome
 
 from spider import BeikeMapSpider
-from spider.models import Cookie, BubbleProgress
+from spider.models import (
+    Cookie, 
+    Community, House,
+    CommunityProgress, HouseProgress
+)
 from spider.utils import (
-    crawl_login_qr_code, crawl_login_status, init_database, user_agent
+    crawl_login_qr_code, 
+    crawl_login_status, 
+    init_database, user_agent
 )
 
 
@@ -109,18 +115,46 @@ async def get_spider_progress():
     with Session() as db_session:
         result = {}
         today_ds = datetime.today().strftime(r'%Y%m%d')
-        for group_type in ['district', 'bizcircle', 'community']:
-            progresses = (
-                db_session
-                .query(BubbleProgress)
-                .filter(BubbleProgress.ds == today_ds)
-                .filter(BubbleProgress.group_type == group_type)
-                .all()
-            )
-            result[group_type] = {
-                'finished': sum([p.is_finished for p in progresses]),
-                'total': len(progresses)
-            }
+        community_progresses = (
+            db_session
+            .query(CommunityProgress)
+            .filter(CommunityProgress.ds == today_ds)
+            .all()
+        )
+        result['community_list'] = {
+            'finished': sum([p.is_finished for p in community_progresses]),
+            'total': len(community_progresses)
+        }
+        house_progresses = (
+            db_session
+            .query(HouseProgress)
+            .filter(HouseProgress.ds == today_ds)
+            .all()
+        )
+        result['house_list'] = {
+            'finished': sum([1 - p.has_more for p in house_progresses]),
+            'total': len(house_progresses)
+        }
+        communities = (
+            db_session
+            .query(Community)
+            .filter(Community.ds == today_ds)
+            .all()
+        )
+        result['community_detail'] = {
+            'finished': sum([c.is_detail_crawled for c in communities]),
+            'total': len(communities)
+        }
+        houses = (
+            db_session
+            .query(House)
+            .filter(House.ds == today_ds)
+            .all()
+        )
+        result['house_detail'] = {
+            'finished': sum([h.is_detail_crawled for h in houses]),
+            'total': len(houses)
+        }
     return result
 
 

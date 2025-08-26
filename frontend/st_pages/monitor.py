@@ -45,34 +45,43 @@ def spider_monitor():
     res = httpx.get(f'{base_url}/spider_progress')
     res.raise_for_status()
     progress = res.json()
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     col1.metric(
-        label="District", 
+        label="Community List", 
         value=(
-            f"{progress['district']['finished']}/"
-            f"{progress['district']['total']}"
+            f"{progress['community_list']['finished']}/"
+            f"{progress['community_list']['total']}"
         ),
         border=True
     )
     col2.metric(
-        label="Bizcircle", 
+        label="House List", 
         value=(
-            f"{progress['bizcircle']['finished']}/"
-            f"{progress['bizcircle']['total']}"
+            f"{progress['house_list']['finished']}/"
+            f"{progress['house_list']['total']}"
         ),
         border=True
     )
     col3.metric(
-        label="Community", 
+        label="Community Detail", 
         value=(
-            f"{progress['community']['finished']}/"
-            f"{progress['community']['total']}"
+            f"{progress['community_detail']['finished']}/"
+            f"{progress['community_detail']['total']}"
         ),
         border=True
     )
-    res = httpx.get(f'{base_url}/spider_log')
-    if res.status_code == 200:
-        st.code(res.json()['spider_log'])
+    col4.metric(
+        label="House Detail", 
+        value=(
+            f"{progress['house_detail']['finished']}/"
+            f"{progress['house_detail']['total']}"
+        ),
+        border=True
+    )
+    with st.expander('View Spider Log'):
+        res = httpx.get(f'{base_url}/spider_log')
+        if res.status_code == 200:
+            st.code(res.json()['spider_log'])
 
 
 def main():
