@@ -115,6 +115,7 @@ async def get_spider_progress():
     with Session() as db_session:
         result = {}
         today_ds = datetime.today().strftime(r'%Y%m%d')
+        result['ds'] = today_ds
         community_progresses = (
             db_session
             .query(CommunityProgress)
@@ -167,5 +168,6 @@ async def get_spider_log(limit: int = 200):
         lines = f.readlines()
         lines.reverse()
     return {
+        'ds': today_ds,
         'spider_log': ''.join(lines[:limit])
     }

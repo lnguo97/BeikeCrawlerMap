@@ -4,7 +4,7 @@ import streamlit as st
 
 
 st.logo('assets/logo.png')
-st.set_page_config(page_title="Beike Crawler", layout="wide")
+st.set_page_config(page_title='Beike Crawler', layout='centered')
 pg = st.navigation([
     st.Page(
         "st_pages/login.py", 

@@ -5,7 +5,7 @@ import time
 import streamlit as st
 import httpx
 
-
+@st.fragment(run_every=5)
 def spider_control():
     base_url = os.getenv('BACKEND_URL') or 'http://localhost:8000'
     res = httpx.get(f'{base_url}/is_spider_running')
@@ -41,11 +41,13 @@ def spider_control():
 
 @st.fragment(run_every=5)
 def spider_monitor():
+    st.subheader('Spider Progress')
     base_url = os.getenv('BACKEND_URL') or 'http://localhost:8000'
     res = httpx.get(f'{base_url}/spider_progress')
     res.raise_for_status()
     progress = res.json()
-    col1, col2, col3, col4 = st.columns(4)
+    st.write(f"Data Date: {progress['ds']}")
+    col1, col2 = st.columns(2)
     col1.metric(
         label="Community List", 
         value=(
@@ -62,7 +64,8 @@ def spider_monitor():
         ),
         border=True
     )
-    col3.metric(
+    col1, col2 = st.columns(2)
+    col1.metric(
         label="Community Detail", 
         value=(
             f"{progress['community_detail']['finished']}/"
@@ -70,7 +73,7 @@ def spider_monitor():
         ),
         border=True
     )
-    col4.metric(
+    col2.metric(
         label="House Detail", 
         value=(
             f"{progress['house_detail']['finished']}/"
@@ -78,6 +81,7 @@ def spider_monitor():
         ),
         border=True
     )
+    st.subheader('Spider Log')
     with st.expander('View Spider Log'):
         res = httpx.get(f'{base_url}/spider_log')
         if res.status_code == 200:
