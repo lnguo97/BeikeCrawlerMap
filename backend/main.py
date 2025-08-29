@@ -1,15 +1,115 @@
 import asyncio
+import logging
 import pathlib
+from contextlib import asynccontextmanager
 from datetime import datetime
 
 from fastapi import FastAPI, Request, BackgroundTasks, HTTPException
 
 from spider import BeikeMapSpider
-from spider.models import Community, House, CommunityProgress, HouseProgress
-from spider.utils import init_database, USER_AGENT
+from spider.models import (
+    Community, House, CommunityProgress, HouseProgress
+)
 
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # initialize logger
+    pathlib.Path('log/').mkdir(parents=True, exist_ok=True)
+    logger = logging.getLogger(f'spider')
+    logger.setLevel(logging.DEBUG)
+    app.state.logger = logger
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
+
+
+def start_spider(request: Request):
+    try:
+        with BeikeMapSpider() as spider:
+            request.app.state.spider = spider
+            request.app.state.spider.run()
+    finally:
+        delattr(request.app.state, 'spider')
+
+
+@app.post('/run_spider')
+async def run_spider(request: Request, background_tasks: BackgroundTasks):
+    background_tasks.add_task(start_spider, request=request)
+    return {'msg': 'spider started'}
+
+
+@app.get('/is_spider_running')
+async def get_is_spider_running(request: Request):
+    return {'is_spider_running': hasattr(request.app.state, 'spider')}
+
+
+@app.post('/stop_spider')
+async def stop_spider(request: Request):
+    if not hasattr(request.app.state, 'spider'):
+        raise HTTPException(404, 'No running spider')
+    request.app.state.spider.interrupted = True
+    return {'msg': 'spider stopped'}
+
+
+@app.get('/spider_progress')
+async def get_spider_progress(request: Request):
+    with BeikeMapSpider.init_db_session() as db_session:
+        result = {}
+        today_ds = datetime.today().strftime(r'%Y%m%d')
+        result['ds'] = today_ds
+        community_progresses = (
+            db_session
+            .query(CommunityProgress)
+            .filter(CommunityProgress.ds == today_ds)
+            .all()
+        )
+        result['community_list'] = {
+            'finished': sum([p.is_finished for p in community_progresses]),
+            'total': len(community_progresses)
+        }
+        house_progresses = (
+            db_session
+            .query(HouseProgress)
+            .filter(HouseProgress.ds == today_ds)
+            .all()
+        )
+        result['house_list'] = {
+            'finished': sum([1 - p.has_more for p in house_progresses]),
+            'total': len(house_progresses)
+        }
+        communities = (
+            db_session
+            .query(Community)
+            .filter(Community.ds == today_ds)
+            .all()
+        )
+        result['community_detail'] = {
+            'finished': sum([c.is_detail_crawled for c in communities]),
+            'total': len(communities)
+        }
+        houses = (
+            db_session
+            .query(House)
+            .filter(House.ds == today_ds)
+            .all()
+        )
+        result['house_detail'] = {
+            'finished': sum([h.is_detail_crawled for h in houses]),
+            'total': len(houses)
+        }
+    return result
+
+
+@app.get('/spider_log')
+async def get_spider_log():
+    today_ds = datetime.today().strftime(r'%Y%m%d')
+    spider_log = ''
+    if pathlib.Path(f'log/spider_{today_ds}.log').exists():
+        with open(f'log/spider_{today_ds}.log') as f:
+            spider_log = f.read()
+    return {'ds': today_ds, 'spider_log': spider_log}
 
 
 # @app.get('/login_qr_code')
@@ -71,93 +171,3 @@ app = FastAPI()
 #     }
 
 
-@app.post('/run_spider')
-async def run_spider(request: Request, background_tasks: BackgroundTasks):
-    async def start_spider():
-        try:
-            with BeikeMapSpider() as spider:
-                request.app.state.spider = spider
-                await spider.run()
-        finally:
-            if hasattr(request.app.state, 'spider'):
-                delattr(request.app.state, 'spider')
-
-    background_tasks.add_task(lambda: asyncio.run(start_spider()))
-    return {'msg': 'spider started'}
-
-
-@app.get('/is_spider_running')
-async def get_is_spider_running(request: Request):
-    return {'is_spider_running': hasattr(request.app.state, 'spider')}
-
-
-@app.post('/stop_spider')
-async def stop_spider(request: Request):
-    if not hasattr(request.app.state, 'spider'):
-        raise HTTPException(404, 'No running spider')
-    request.app.state.spider.interrupted = True
-    return {'msg': 'spider stopped'}
-
-
-@app.get('/spider_progress')
-async def get_spider_progress():
-    Session = init_database()
-    with Session() as db_session:
-        result = {}
-        today_ds = datetime.today().strftime(r'%Y%m%d')
-        result['ds'] = today_ds
-        community_progresses = (
-            db_session
-            .query(CommunityProgress)
-            .filter(CommunityProgress.ds == today_ds)
-            .all()
-        )
-        result['community_list'] = {
-            'finished': sum([p.is_finished for p in community_progresses]),
-            'total': len(community_progresses)
-        }
-        house_progresses = (
-            db_session
-            .query(HouseProgress)
-            .filter(HouseProgress.ds == today_ds)
-            .all()
-        )
-        result['house_list'] = {
-            'finished': sum([1 - p.has_more for p in house_progresses]),
-            'total': len(house_progresses)
-        }
-        communities = (
-            db_session
-            .query(Community)
-            .filter(Community.ds == today_ds)
-            .all()
-        )
-        result['community_detail'] = {
-            'finished': sum([c.is_detail_crawled for c in communities]),
-            'total': len(communities)
-        }
-        houses = (
-            db_session
-            .query(House)
-            .filter(House.ds == today_ds)
-            .all()
-        )
-        result['house_detail'] = {
-            'finished': sum([h.is_detail_crawled for h in houses]),
-            'total': len(houses)
-        }
-    return result
-
-
-@app.get('/spider_log')
-async def get_spider_log(limit: int = 200):
-    today_ds = datetime.today().strftime(r'%Y%m%d')
-    if not pathlib.Path(f'log/spider_{today_ds}.log').exists():
-        raise HTTPException(500, 'Spider log not found')
-    with open(f'log/spider_{today_ds}.log') as f:
-        lines = f.readlines()
-        lines.reverse()
-    return {
-        'ds': today_ds,
-        'spider_log': ''.join(lines[:limit])
-    }

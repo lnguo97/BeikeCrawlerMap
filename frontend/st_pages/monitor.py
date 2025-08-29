@@ -40,13 +40,13 @@ def spider_control():
 
 
 @st.fragment(run_every=5)
-def spider_monitor():
+def spider_progress():
     st.subheader('Spider Progress')
     base_url = os.getenv('BACKEND_URL') or 'http://localhost:8000'
     res = requests.get(f'{base_url}/spider_progress')
     res.raise_for_status()
     progress = res.json()
-    st.write(f"Data Date: {progress['ds']}")
+    st.text(f"Data Date: {progress['ds']}")
     col1, col2 = st.columns(2)
     col1.metric(
         label="Community List", 
@@ -81,17 +81,33 @@ def spider_monitor():
         ),
         border=True
     )
+
+
+@st.fragment(run_every=5)
+def spider_log():
     st.subheader('Spider Log')
-    with st.expander('View Spider Log'):
-        res = requests.get(f'{base_url}/spider_log')
-        if res.status_code == 200:
-            st.code(res.json()['spider_log'])
+    base_url = os.getenv('BACKEND_URL') or 'http://localhost:8000'
+    result = requests.get(f'{base_url}/spider_log').json()
+    spider_log = result['spider_log']
+    ds = result['ds']
+    st.text(f"Data Date: {ds}")
+    if not spider_log:
+        st.text(f'Spider for date {ds} has not started')
+    else:
+        st.download_button(
+            label=f"Download spider log",
+            data=spider_log,
+            file_name=f"spider_{ds}.txt",
+            on_click="ignore",
+            icon=":material/download:",
+        )
 
 
 def main():
     st.title('Spider Monitoring')
     spider_control()
-    spider_monitor()
+    spider_progress()
+    spider_log()
     
 
 main()

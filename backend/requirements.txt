@@ -1,7 +1,5 @@
 fastapi
 uvicorn
-pydoll-python
 sqlalchemy
-httpx
-pandas
+requests
 beautifulsoup4

@@ -1,38 +1,79 @@
 import asyncio
 import json
-import typing
+import logging
+import os
+import pathlib
 import time
 from datetime import datetime
 from itertools import product
 
 import requests
 from bs4 import BeautifulSoup
+from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import sessionmaker
 
-from .utils import init_logger, init_database, USER_AGENT
-from .models import Community, CommunityProgress, House, HouseProgress
+from .models import Base, Community, CommunityProgress, House, HouseProgress
 
 
 class BeikeMapSpider:
     def __init__(self) -> None:
-        self.ds = datetime.today().strftime(r'%Y%m%d')
-        self.logger = init_logger(f'spider_{self.ds}')
-        self.headers = {'user-agent': USER_AGENT}
-
-        self.interrupted = False
+        self.ds = None
+        self.logger = None
         self.db_session = None
-        
+        self.headers = None
+        self.interrupted = False
         self.MIN_LAT, self.MAX_LAT = 30.66, 31.89
         self.MIN_LON, self.MAX_LON = 120.86, 122.20
 
     def __enter__(self):
-        sessionmaker = init_database()
-        self.db_session: Session = sessionmaker()
+        # initialize date string
+        self.ds = datetime.today().strftime(r'%Y%m%d')
+
+        # initialize logger
+        self.logger = logging.getLogger('spider')
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        )
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.DEBUG)
+        console_handler.setFormatter(formatter)
+        self.logger.addHandler(console_handler)
+        log_file = pathlib.Path(f'log/spider_{self.ds}.log')
+        file_handler = logging.FileHandler(log_file)
+        file_handler.setLevel(logging.INFO)
+        file_handler.setFormatter(formatter)
+        self.logger.addHandler(file_handler)
+
+        # initialize database connection
+        self.db_session = self.init_db_session()
+
+        # initialize headers
+        self.headers = {
+            'user-agent': (
+                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
+                'AppleWebKit/537.36 (KHTML, like Gecko) '
+                'Chrome/138.0.0.0 '
+                'Safari/537.36'
+            )
+        }
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.db_session.commit()
+        # remove log handler
+        for handler in self.logger.handlers:
+            self.logger.removeHandler(handler)
+        
+        # close database connection
         self.db_session.close()
+
+    def init_db_session():
+        pathlib.Path('data/').mkdir(parents=True, exist_ok=True)
+        db_url = os.getenv('DATABASE_URL') or 'sqlite:///data/beike_house.db'
+        engine = create_engine(db_url)
+        Base.metadata.create_all(bind=engine)
+        Session = sessionmaker(bind=engine)
+        return Session()    
         
     @staticmethod
     def get_community_list_url(
@@ -373,7 +414,7 @@ class BeikeMapSpider:
             self.db_session.commit()
             time.sleep(0.1)
 
-    async def run(self):
+    def run(self):
         self.init_community_progress()
         self.crawl_community_list()
         self.crawl_community_detail()
