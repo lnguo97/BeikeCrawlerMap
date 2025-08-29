@@ -5,7 +5,7 @@ import os
 import pathlib
 import time
 
-import httpx
+import requests
 import streamlit as st
 
 
@@ -26,7 +26,7 @@ def main():
     if st.session_state.login_btn:
         # crawl qr code
         with st.spinner('Crawling QR code...'):
-            res = httpx.get(
+            res = requests.get(
                 f'{base_url}/login_qr_code', 
                 params={'headless': not st.session_state.show_browser}
             )
@@ -34,7 +34,7 @@ def main():
                 res.raise_for_status()
             except Exception as e:
                 st.exception(e)
-                httpx.post(f'{base_url}/stop_browser')
+                requests.post(f'{base_url}/stop_browser')
                 return
             img_area.image(base64.b64decode(res.json()['qr_code']))
         
@@ -42,16 +42,16 @@ def main():
         is_login = False
         start = time.time()
         while not is_login and time.time() < start + 30:
-            res = httpx.get(f'{base_url}/login_status')
+            res = requests.get(f'{base_url}/login_status')
             try:
                 res.raise_for_status()
             except Exception as e:
                 st.exception(e)
-                httpx.post(f'{base_url}/stop_browser')
+                requests.post(f'{base_url}/stop_browser')
                 return
             is_login = res.json()['is_login']
             if is_login:
-                httpx.post(f'{base_url}/save_cookie')
+                requests.post(f'{base_url}/save_cookie')
                 break
             time_left = int(30 - (time.time() - start))
             msg_area.text(f'Expire in {time_left} seconds')
@@ -63,9 +63,9 @@ def main():
         else:
             msg_area.text('Login successfully')
         img_area.empty()
-        httpx.post(f'{base_url}/stop_browser')
+        requests.post(f'{base_url}/stop_browser')
 
-    res = httpx.get(f'{base_url}/cookie')
+    res = requests.get(f'{base_url}/cookie')
     res.raise_for_status()
     st.json(res.json())
 

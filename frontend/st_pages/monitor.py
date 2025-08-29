@@ -3,12 +3,12 @@ import sqlite3
 import time
 
 import streamlit as st
-import httpx
+import requests
 
 @st.fragment(run_every=5)
 def spider_control():
     base_url = os.getenv('BACKEND_URL') or 'http://localhost:8000'
-    res = httpx.get(f'{base_url}/is_spider_running')
+    res = requests.get(f'{base_url}/is_spider_running')
     res.raise_for_status()
     if res.json()['is_spider_running']:
         st.info('Spider is running')
@@ -27,13 +27,13 @@ def spider_control():
             # type='primary'
         )
     if st.session_state.get('stop_spider'):
-        res = httpx.post(f'{base_url}/stop_spider')
+        res = requests.post(f'{base_url}/stop_spider')
         res.raise_for_status()
         time.sleep(2)  # wait for the spider to stop
         st.rerun()
 
     if st.session_state.get('start_spider'):
-        res = httpx.post(f'{base_url}/run_spider')
+        res = requests.post(f'{base_url}/run_spider')
         res.raise_for_status()
         time.sleep(2)  # wait for the spider to start
         st.rerun()
@@ -43,7 +43,7 @@ def spider_control():
 def spider_monitor():
     st.subheader('Spider Progress')
     base_url = os.getenv('BACKEND_URL') or 'http://localhost:8000'
-    res = httpx.get(f'{base_url}/spider_progress')
+    res = requests.get(f'{base_url}/spider_progress')
     res.raise_for_status()
     progress = res.json()
     st.write(f"Data Date: {progress['ds']}")
@@ -83,7 +83,7 @@ def spider_monitor():
     )
     st.subheader('Spider Log')
     with st.expander('View Spider Log'):
-        res = httpx.get(f'{base_url}/spider_log')
+        res = requests.get(f'{base_url}/spider_log')
         if res.status_code == 200:
             st.code(res.json()['spider_log'])
 

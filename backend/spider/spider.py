@@ -1,48 +1,33 @@
 import asyncio
 import json
 import typing
+import time
 from datetime import datetime
 from itertools import product
 
-import httpx
-import pandas as pd
-from bs4 import BeautifulSoup, Tag
+import requests
+from bs4 import BeautifulSoup
 from sqlalchemy.orm import Session
 
-from .utils import init_logger, init_database, user_agent
-from .models import (
-    Cookie, 
-    Community, CommunityProgress, 
-    House, HouseProgress, 
-)
+from .utils import init_logger, init_database, USER_AGENT
+from .models import Community, CommunityProgress, House, HouseProgress
 
 
 class BeikeMapSpider:
     def __init__(self) -> None:
         self.ds = datetime.today().strftime(r'%Y%m%d')
         self.logger = init_logger(f'spider_{self.ds}')
+        self.headers = {'user-agent': USER_AGENT}
 
         self.interrupted = False
-        self.headers = None
         self.db_session = None
         
         self.MIN_LAT, self.MAX_LAT = 30.66, 31.89
         self.MIN_LON, self.MAX_LON = 120.86, 122.20
 
     def __enter__(self):
-        # connect to database
         sessionmaker = init_database()
         self.db_session: Session = sessionmaker()
-
-        # load cookie
-        cookies = self.db_session.query(Cookie).all()
-        if not cookies:
-            raise ValueError('Cookie not found')
-        cookies.sort(key=lambda c: c.crawl_time, reverse=True)
-        self.headers = {
-            'user-agent': user_agent,
-            'cookie': cookies[0].text
-        }
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -96,41 +81,7 @@ class BeikeMapSpider:
                 )
             self.db_session.commit()
 
-    async def crawl_community_list_data(
-        self,
-        progress: CommunityProgress, 
-        client: httpx.AsyncClient
-    ):
-        self.logger.info(
-            f'Crawling community list, '
-            f'latitute {progress.min_lat}-{progress.max_lat}, '
-            f'longitude {progress.min_lon}-{progress.max_lon}'
-        )
-        res = await client.get(
-            url=self.get_community_list_url(
-                min_lat=progress.min_lat,
-                max_lat=progress.max_lat,
-                min_lon=progress.min_lon,
-                max_lon=progress.max_lon,
-            )
-        )
-        res.raise_for_status()
-        data = res.json()['data']
-        if 'bubbleList' in data:
-            for bubble in data['bubbleList']:
-                if (
-                    self.db_session.query(Community)
-                    .filter(Community.id == bubble['id'])
-                    .filter(Community.ds == self.ds)
-                    .first()
-                ):
-                    continue
-                bubble['ds'] = self.ds
-                self.db_session.add(Community(**bubble))
-        progress.is_finished = True
-        self.db_session.commit()
-
-    async def crawl_community_list(self):
+    def crawl_community_list(self):
         if self.interrupted:
             return
         progresses = (
@@ -143,78 +94,41 @@ class BeikeMapSpider:
         if not progresses:
             self.logger.info(f'All communities are crawled for date {self.ds}')
             return
-        max_concurrent = 3
-        async with httpx.AsyncClient(headers=self.headers) as client:
-            for i in range(0, len(progresses), max_concurrent):
-                if self.interrupted:
-                    return
-                await asyncio.gather(*[
-                    self.crawl_community_list_data(progress, client)
-                    for progress in progresses[i:i + max_concurrent]
-                ])
-                await asyncio.sleep(0.5)
-
-    @staticmethod
-    def get_element_text(
-        element: BeautifulSoup | Tag | None, 
-        selector: str | None = None
-    ) -> str | None:
-        if element is None:
-            return None
-        if selector is None:
-            return element.get_text(strip=True)
-        target = element.select_one(selector)
-        if target is None:
-            return None
-        return target.get_text(strip=True)
-
-    async def crawl_community_detail_data(
-        self, 
-        community: Community,
-        client: httpx.AsyncClient
-    ):
-        self.logger.info(f'Crawling details for community {community.id}')
-
-        res = await client.get(f'https://sh.ke.com/xiaoqu/{community.id}/')
-        soup = BeautifulSoup(res.content, 'html.parser')
-
-        title = soup.select_one('.title')
-        main_title = self.get_element_text(title, '.main')
-        sub_title = self.get_element_text(title, '.sub')
-
-        catalog = soup.select_one('.intro.clear')
-        if catalog is not None: 
-            catalogs = catalog.find_all('a')
-            block_name = (
-                self.get_element_text(catalogs[2])
-                if len(catalogs) > 2 else None
+        for progress in progresses:
+            self.logger.info(
+                f'Crawling community list, '
+                f'latitute {progress.min_lat}-{progress.max_lat}, '
+                f'longitude {progress.min_lon}-{progress.max_lon}'
             )
-        else:
-            block_name = None
+            res = requests.get(
+                url=self.get_community_list_url(
+                    min_lat=progress.min_lat,
+                    max_lat=progress.max_lat,
+                    min_lon=progress.min_lon,
+                    max_lon=progress.max_lon,
+                ),
+                headers=self.headers
+            )
+            res.raise_for_status()
+            data = res.json()['data']
+            if 'bubbleList' in data:
+                for bubble in data['bubbleList']:
+                    if (
+                        self.db_session.query(Community)
+                        .filter(Community.id == bubble['id'])
+                        .filter(Community.ds == self.ds)
+                        .first()
+                    ):
+                        continue
+                    bubble['ds'] = self.ds
+                    self.db_session.add(Community(**bubble))
+            progress.is_finished = True
+            self.db_session.commit()
+            if self.interrupted:
+                return
+            time.sleep(0.1)
 
-        follow_cnt = self.get_element_text(soup.find(id='favCount'))
-
-        unit_price = self.get_element_text(soup, '.xiaoquUnitPrice')
-        price_desc = self.get_element_text(soup, '.xiaoquUnitPriceDesc')
-
-        info = {}
-        info_items = soup.select('.xiaoquInfoItem')
-        for item in info_items:
-            label = self.get_element_text(item, '.xiaoquInfoLabel')
-            content = self.get_element_text(item, '.xiaoquInfoContent')
-            info[label] = content
-
-        community.main_title = main_title
-        community.sub_title = sub_title
-        community.block_name = block_name
-        community.follow_cnt = follow_cnt
-        community.unit_price = unit_price
-        community.price_desc = price_desc
-        community.info = json.dumps(info, ensure_ascii=False)
-        community.is_detail_crawled = True
-        self.db_session.commit()
-
-    async def crawl_community_detail(self):
+    def crawl_community_detail(self):
         if self.interrupted:
             return
         communities = (
@@ -229,17 +143,66 @@ class BeikeMapSpider:
                 f'All community details are crawled for date {self.ds}'
             )
             return
-        max_concurrent = 3
-        headers = {'user-agent': user_agent}
-        async with httpx.AsyncClient(headers=headers, timeout=10) as client:
-            for i in range(0, len(communities), max_concurrent):
-                if self.interrupted:
-                    return
-                await asyncio.gather(*[
-                    self.crawl_community_detail_data(community, client)
-                    for community in communities[i:i + max_concurrent]
-                ])
-                await asyncio.sleep(0.5)
+        for community in communities:
+            if self.interrupted:
+                return
+            self.logger.info(f'Crawling details for community {community.id}')
+            res = requests.get(
+                url=f'https://sh.ke.com/xiaoqu/{community.id}/',
+                headers=self.headers
+            )
+            soup = BeautifulSoup(res.content, 'html.parser')
+            
+            # crawl title
+            title = soup.select_one('.title')
+            if title is not None:
+                main_title = title.select_one('.main')
+                if main_title is not None:
+                    community.main_title = main_title.get_text(strip=True)
+                sub_title = title.select_one('.sub')
+                if sub_title is not None:
+                    community.sub_title = sub_title.get_text(strip=True)
+
+            # crawl catalog
+            catalog = soup.select_one('.intro.clear')
+            if catalog is not None: 
+                catalogs = catalog.find_all('a')
+                if len(catalogs) > 2:
+                    community.block_name = catalogs[2].get_text(strip=True)
+
+            # crawl follow count
+            follow_cnt = soup.find(id='favCount')
+            if follow_cnt is not None:
+                community.follow_cnt = follow_cnt.get_text(strip=True)
+            
+            # crawl unit price
+            unit_price = soup.select_one('.xiaoquUnitPrice')
+            if unit_price is not None:
+                community.unit_price = unit_price.get_text(strip=True)
+            
+            # crawl unit price
+            price_desc = soup.select_one('.xiaoquUnitPriceDesc')
+            if price_desc is not None:
+                community.price_desc = price_desc.get_text(strip=True)
+
+            # crawl other info
+            info = {}
+            info_items = soup.select('.xiaoquInfoItem')
+            if info_items is not None:
+                for item in info_items:
+                    label = item.select_one('.xiaoquInfoLabel')
+                    content = item.select_one('.xiaoquInfoContent')
+                    if label is not None and content is not None:
+                        label_text = label.get_text(strip=True)
+                        content_text = content.get_text(strip=True)
+                        info[label_text] = content_text
+            if len(info) > 0:
+                community.info = json.dumps(info, ensure_ascii=False)
+                
+            # save to database
+            community.is_detail_crawled = True
+            self.db_session.commit()
+            time.sleep(0.1)
 
     @staticmethod
     def get_house_list_url(community_id: int, page: int):
@@ -272,41 +235,8 @@ class BeikeMapSpider:
                 progress = HouseProgress(ds=self.ds, community_id=community.id)
                 self.db_session.add(progress)
             self.db_session.commit()
-
-    async def crawl_house_list_data(
-        self, 
-        progress: HouseProgress, 
-        client: httpx.AsyncClient
-    ):
-        self.logger.info(
-            f'Crawling houses for community {progress.community_id}'
-        )
-        page = progress.finished_page + 1
-        while progress.has_more:
-            url = self.get_house_list_url(progress.community_id, page)
-            res = await client.get(url)
-            house_list = res.json()['data']['list']
-            for house in house_list:
-                house_id = house['actionUrl'].split('/')[-1].split('.')[0]
-                if (
-                    self.db_session.query(House)
-                    .filter(House.community_id == progress.community_id)
-                    .filter(House.ds == self.ds)
-                    .filter(House.id == house_id)
-                    .first()
-                ):
-                    continue
-                house['id'] = house_id
-                house['tags'] = '|'.join([tag['desc'] for tag in house['tags']])
-                house['ds'] = self.ds
-                house['community_id'] = progress.community_id
-                self.db_session.add(House(**house))
-            progress.finished_page = page
-            progress.has_more = res.json()['data']['hasMore']
-            self.db_session.commit()
-            page += 1
         
-    async def crawl_house_list(self):
+    def crawl_house_list(self):
         if self.interrupted:
             return
         progresses = (
@@ -319,84 +249,43 @@ class BeikeMapSpider:
         if not progresses:
             self.logger.info(f'All houses are crawled for date {self.ds}')
             return
-        max_concurrent = 3
-        async with httpx.AsyncClient(headers=self.headers) as client:
-            for i in range(0, len(progresses), max_concurrent):
-                if self.interrupted:
-                    return
-                await asyncio.gather(*[
-                    self.crawl_house_list_data(progress, client)
-                    for progress in progresses[i:i + max_concurrent]
-                ])
-                await asyncio.sleep(0.5)
-
-    async def crawl_house_detail_data(
-        self, 
-        house: House,
-        client: httpx.AsyncClient
-    ):
-        self.logger.info(f'Crawling details for house {house.id}')
-
-        res = await client.get(house.actionUrl)
-        soup = BeautifulSoup(res.content, 'html.parser')
-
-        title = soup.select_one('.title')
-        main_title = self.get_element_text(title, '.main')
-        sub_title = self.get_element_text(title, '.sub')
-
-        catalog = soup.select_one('.intro.clear')
-        if catalog is not None:
-            catalogs = catalog.find_all('a')
-            district_name = (
-                self.get_element_text(catalogs[2])
-                if len(catalogs) > 2 else None
+        for progress in progresses:
+            if self.interrupted:
+                return
+            self.logger.info(
+                f'Crawling houses for community {progress.community_id}'
             )
-            block_name = (
-                self.get_element_text(catalogs[3])
-                if len(catalogs) > 3 else None
-            )
-        else:
-            district_name = None
-            block_name = None
-        
-        follow_cnt = self.get_element_text(soup.find(id='favCount'))
+            page = progress.finished_page + 1
+            while progress.has_more:
+                res = requests.get(
+                    url=self.get_house_list_url(progress.community_id, page), 
+                    headers=self.headers
+                )
+                house_list = res.json()['data']['list']
+                for house in house_list:
+                    house_id = house['actionUrl'].split('/')[-1].split('.')[0]
+                    if (
+                        self.db_session.query(House)
+                        .filter(House.community_id == progress.community_id)
+                        .filter(House.ds == self.ds)
+                        .filter(House.id == house_id)
+                        .first()
+                    ):
+                        continue
+                    house['id'] = house_id
+                    house['tags'] = '|'.join(
+                        [tag['desc'] for tag in house['tags']]
+                    )
+                    house['ds'] = self.ds
+                    house['community_id'] = progress.community_id
+                    self.db_session.add(House(**house))
+                progress.finished_page = page
+                progress.has_more = res.json()['data']['hasMore']
+                self.db_session.commit()
+                page += 1
+            time.sleep(0.1)
 
-        price = soup.select_one('.price-container')
-        total_price_num = self.get_element_text(price, '.total')
-        total_price_unit = self.get_element_text(price, '.unit')
-        unit_price = self.get_element_text(price, '.unitPrice')
-
-        house_info = soup.select_one('.houseInfo')
-        room_info = house_info.select_one('.room')
-        room_main_info = self.get_element_text(room_info, '.mainInfo')
-        room_sub_info = self.get_element_text(room_info, '.subInfo')
-
-        type_info = house_info.select_one('.type')
-        type_main_info = self.get_element_text(type_info, '.mainInfo')
-        type_sub_info = self.get_element_text(type_info, '.subInfo')
-
-        area_info = house_info.select_one('.area')
-        area_main_info = self.get_element_text(area_info, '.mainInfo')
-        area_sub_info = self.get_element_text(area_info, '.subInfo')
-
-        house.main_title = main_title
-        house.sub_title = sub_title
-        house.district_name = district_name
-        house.block_name = block_name
-        house.follow_cnt = follow_cnt
-        house.total_price_num = total_price_num
-        house.total_price_unit = total_price_unit
-        house.unit_price = unit_price
-        house.room_main_info = room_main_info
-        house.room_sub_info = room_sub_info
-        house.type_main_info = type_main_info
-        house.type_sub_info = type_sub_info
-        house.area_main_info = area_main_info
-        house.area_sub_info = area_sub_info
-        house.is_detail_crawled = True
-        self.db_session.commit()
-
-    async def crawl_house_detail(self):
+    def crawl_house_detail(self):
         if self.interrupted:
             return
         houses = (
@@ -411,23 +300,84 @@ class BeikeMapSpider:
                 f'All house details are crawled for date {self.ds}'
             )
             return
-        max_concurrent = 3
-        headers = {'user-agent': user_agent}
-        async with httpx.AsyncClient(headers=headers, timeout=10) as client:
-            for i in range(0, len(houses), max_concurrent):
-                if self.interrupted:
-                    return
-                await asyncio.gather(*[
-                    self.crawl_house_detail_data(house, client)
-                    for house in houses[i:i + max_concurrent]
-                ])
-                await asyncio.sleep(0.5)
+        for house in houses:
+            if self.interrupted:
+                return
+            self.logger.info(f'Crawling details for house {house.id}')
+            res = requests.get(
+                url=house.actionUrl, 
+                headers=self.headers
+            )
+            soup = BeautifulSoup(res.content, 'html.parser')
+            
+            # crawl title
+            title = soup.select_one('.title')
+            if title is not None:
+                main_title = title.select_one('.main')
+                if main_title is not None:
+                    house.main_title = main_title.get_text(strip=True)
+                sub_title = title.select_one('.sub')
+                if sub_title is not None:
+                    house.sub_title = sub_title.get_text(strip=True)
+
+            # crawl catalog
+            catalog = soup.select_one('.intro.clear')
+            if catalog is not None: 
+                catalogs = catalog.find_all('a')
+                if len(catalogs) > 2:
+                    house.district_name = catalogs[2].get_text(strip=True)
+                if len(catalogs) > 3:
+                    house.block_name = catalogs[3].get_text(strip=True)
+
+            # crawl follow count
+            follow_cnt = soup.find(id='favCount')
+            if follow_cnt is not None:
+                house.follow_cnt = follow_cnt.get_text(strip=True)
+
+            # crawl price
+            price = soup.select_one('.price-container')
+            if price is not None:
+                total_price_num = price.select_one('.total')
+                total_price_unit = price.select_one('.unit')
+                unit_price = price.select_one('.unitPrice')
+                if total_price_num is not None:
+                    house.total_price_num = total_price_num.get_text(strip=True)
+                if total_price_unit is not None:
+                    house.total_price_unit = total_price_unit.get_text(strip=True)
+                if unit_price is not None:
+                    house.unit_price = unit_price.get_text(strip=True)
+                    
+            # crawl house info
+            house_info = soup.select_one('.houseInfo')
+            if house_info is not None:
+                for info in ['room', 'type', 'area']:
+                    info_tag = house_info.select_one(f'.{info}')
+                    if info_tag is not None:
+                        main_info = info_tag.select_one('.mainInfo')
+                        sub_info = info_tag.select_one('.subInfo')
+                        if main_info is not None:
+                            setattr(
+                                house, 
+                                f'{info}_main_info', 
+                                main_info.get_text(strip=True)
+                            )
+                        if sub_info is not None:
+                            setattr(
+                                house, 
+                                f'{info}_sub_info', 
+                                sub_info.get_text(strip=True)
+                            )
+            
+            # submit to database
+            house.is_detail_crawled = True
+            self.db_session.commit()
+            time.sleep(0.1)
 
     async def run(self):
         self.init_community_progress()
-        await self.crawl_community_list()
-        await self.crawl_community_detail()
+        self.crawl_community_list()
+        self.crawl_community_detail()
 
         self.init_house_progress()
-        await self.crawl_house_list()
-        await self.crawl_house_detail()
+        self.crawl_house_list()
+        self.crawl_house_detail()

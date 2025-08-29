@@ -1,84 +1,74 @@
 import asyncio
 import pathlib
-from contextlib import asynccontextmanager
 from datetime import datetime
 
 from fastapi import FastAPI, Request, BackgroundTasks, HTTPException
-from pydoll.browser import Chrome
 
 from spider import BeikeMapSpider
-from spider.models import (
-    Cookie, 
-    Community, House,
-    CommunityProgress, HouseProgress
-)
-from spider.utils import (
-    crawl_login_qr_code, 
-    crawl_login_status, 
-    init_database, user_agent
-)
+from spider.models import Community, House, CommunityProgress, HouseProgress
+from spider.utils import init_database, USER_AGENT
 
 
 app = FastAPI()
 
 
-@app.get('/login_qr_code')
-async def get_login_qr_code(request: Request, headless: bool = True):
-    browser = Chrome()
-    browser.options.headless = headless
-    browser.options.add_argument(f'--user-agent={user_agent}')
-    tab = await browser.start()
-    await browser.set_window_maximized()
-    qr_code = await crawl_login_qr_code(tab)
-    request.app.state.browser = browser
-    request.app.state.tab = tab
-    return {'qr_code': qr_code}
+# @app.get('/login_qr_code')
+# async def get_login_qr_code(request: Request, headless: bool = True):
+#     browser = Chrome()
+#     browser.options.headless = headless
+#     browser.options.add_argument(f'--user-agent={user_agent}')
+#     tab = await browser.start()
+#     await browser.set_window_maximized()
+#     qr_code = await crawl_login_qr_code(tab)
+#     request.app.state.browser = browser
+#     request.app.state.tab = tab
+#     return {'qr_code': qr_code}
 
 
-@app.get('/login_status')
-async def get_login_status(request: Request):
-    if not hasattr(request.app.state, 'tab'):
-        raise HTTPException(500, 'No active browser')
-    login_status = await crawl_login_status(request.app.state.tab)
-    return {'is_login': login_status}
+# @app.get('/login_status')
+# async def get_login_status(request: Request):
+#     if not hasattr(request.app.state, 'tab'):
+#         raise HTTPException(500, 'No active browser')
+#     login_status = await crawl_login_status(request.app.state.tab)
+#     return {'is_login': login_status}
 
 
-@app.post('/stop_browser')
-async def stop_browser(request: Request):
-    if hasattr(request.app.state, 'tab'):
-        await request.app.state.tab.close()
-    if hasattr(request.app.state, 'browser'):
-        await request.app.state.browser.stop()
-    return {'msg': 'browser stopped'}
+# @app.post('/stop_browser')
+# async def stop_browser(request: Request):
+#     if hasattr(request.app.state, 'tab'):
+#         await request.app.state.tab.close()
+#     if hasattr(request.app.state, 'browser'):
+#         await request.app.state.browser.stop()
+#     return {'msg': 'browser stopped'}
 
 
-@app.post('/save_cookie')
-async def save_cookie(request: Request):
-    if not hasattr(request.app.state, 'tab'):
-        raise HTTPException(500, 'No active browser')
-    Session = init_database()
-    with Session() as session:
-        cookies = await request.app.state.tab.get_cookies()
-        cookie_text = '; '.join([
-            f"{cookie['name']}={cookie['value']}" for cookie in cookies
-        ])
-        session.add(Cookie(crawl_time=datetime.now(), text=cookie_text))
-        session.commit()
-    return {'msg': 'cookie saved to database'}
+# @app.post('/save_cookie')
+# async def save_cookie(request: Request):
+#     if not hasattr(request.app.state, 'tab'):
+#         raise HTTPException(500, 'No active browser')
+#     Session = init_database()
+#     with Session() as session:
+#         cookies = await request.app.state.tab.get_cookies()
+#         cookie_text = '; '.join([
+#             f"{cookie['name']}={cookie['value']}" for cookie in cookies
+#         ])
+#         session.add(Cookie(crawl_time=datetime.now(), text=cookie_text))
+#         session.commit()
+#     return {'msg': 'cookie saved to database'}
 
 
-@app.get('/cookie')
-async def get_cookie(request: Request):
-    Session = init_database()
-    with Session() as db_session:
-        cookies = db_session.query(Cookie).all()
-        if not cookies:
-            raise HTTPException(404, 'Cookie not found')
-        cookies.sort(key=lambda c: c.crawl_time, reverse=True)
-    return {
-        'crawl_time': cookies[0].crawl_time,
-        'text': cookies[0].text,
-    }
+# @app.get('/cookie')
+# async def get_cookie(request: Request):
+#     Session = init_database()
+#     with Session() as db_session:
+#         cookies = db_session.query(Cookie).all()
+#         if not cookies:
+#             raise HTTPException(404, 'Cookie not found')
+#         cookies.sort(key=lambda c: c.crawl_time, reverse=True)
+#     return {
+#         'crawl_time': cookies[0].crawl_time,
+#         'text': cookies[0].text,
+#     }
 
 
 @app.post('/run_spider')
