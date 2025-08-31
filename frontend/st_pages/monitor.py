@@ -5,9 +5,23 @@ import time
 import streamlit as st
 import requests
 
+
+base_url = os.getenv('BACKEND_URL') or 'http://localhost:8000'
+
+
+def page_header():
+    st.session_state.city_list = requests.get(f'{base_url}/spider_log').json()
+    with st.container(horizontal=True, vertical_alignment='bottom'):
+        st.title('Spider Monitoring')
+        st.selectbox(
+            'Choose city:', 
+            options=st.session_state.city_list.keys(),
+            key='selected_city'
+        )
+
+
 @st.fragment(run_every=5)
 def spider_control():
-    base_url = os.getenv('BACKEND_URL') or 'http://localhost:8000'
     res = requests.get(f'{base_url}/is_spider_running')
     res.raise_for_status()
     if res.json()['is_spider_running']:
@@ -42,7 +56,6 @@ def spider_control():
 @st.fragment(run_every=5)
 def spider_progress():
     st.subheader('Spider Progress')
-    base_url = os.getenv('BACKEND_URL') or 'http://localhost:8000'
     res = requests.get(f'{base_url}/spider_progress')
     res.raise_for_status()
     progress = res.json()
@@ -86,7 +99,6 @@ def spider_progress():
 @st.fragment(run_every=5)
 def spider_log():
     st.subheader('Spider Log')
-    base_url = os.getenv('BACKEND_URL') or 'http://localhost:8000'
     result = requests.get(f'{base_url}/spider_log').json()
     spider_log = result['spider_log']
     ds = result['ds']
@@ -104,7 +116,7 @@ def spider_log():
 
 
 def main():
-    st.title('Spider Monitoring')
+    
     spider_control()
     spider_progress()
     spider_log()

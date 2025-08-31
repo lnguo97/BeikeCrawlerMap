@@ -9,46 +9,38 @@ from itertools import product
 
 import requests
 from bs4 import BeautifulSoup
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, Engine
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import sessionmaker
 
-from .models import Base, Community, CommunityProgress, House, HouseProgress
+from .models import (
+    Base, City, Community, CommunityProgress, House, HouseProgress
+)
 
 
 class BeikeMapSpider:
-    def __init__(self) -> None:
-        self.ds = None
-        self.logger = None
-        self.db_session = None
-        self.headers = None
-        self.interrupted = False
-        self.MIN_LAT, self.MAX_LAT = 30.66, 31.89
-        self.MIN_LON, self.MAX_LON = 120.86, 122.20
-
-    def __enter__(self):
-        # initialize date string
+    def __init__(self, city_name: str, Session: sessionmaker) -> None:
         self.ds = datetime.today().strftime(r'%Y%m%d')
-
+        self.db_session = Session()
+        self.city = (
+            self.db_session.query(City)
+            .filter(City.name == city_name)
+            .first()
+        )
+        if not self.city:
+            raise ValueError(f'Invalid city name: {city_name}')
+        self.logger = None
+        self.headers = None
+        
+    def __enter__(self):
         # initialize logger
         self.logger = logging.getLogger('spider')
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        )
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.DEBUG)
-        console_handler.setFormatter(formatter)
-        self.logger.addHandler(console_handler)
-        log_file = pathlib.Path(f'log/spider_{self.ds}.log')
+        log_file = pathlib.Path(f'log/spider_{self.city_code}_{self.ds}.log')
         file_handler = logging.FileHandler(log_file)
         file_handler.setLevel(logging.INFO)
-        file_handler.setFormatter(formatter)
         self.logger.addHandler(file_handler)
 
-        # initialize database connection
-        self.db_session = self.init_db_session()
-
-        # initialize headers
+        # initialize header
         self.headers = {
             'user-agent': (
                 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
@@ -60,30 +52,23 @@ class BeikeMapSpider:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        # remove log handler
+        # remove log file handler
         for handler in self.logger.handlers:
-            self.logger.removeHandler(handler)
+            if isinstance(handler, logging.FileHandler):
+                self.logger.removeHandler(handler)
         
         # close database connection
         self.db_session.close()
-
-    def init_db_session():
-        pathlib.Path('data/').mkdir(parents=True, exist_ok=True)
-        db_url = os.getenv('DATABASE_URL') or 'sqlite:///data/beike_house.db'
-        engine = create_engine(db_url)
-        Base.metadata.create_all(bind=engine)
-        Session = sessionmaker(bind=engine)
-        return Session()    
         
-    @staticmethod
     def get_community_list_url(
+        self,
         min_lat: float,
         max_lat: float,
         min_lon: float,
         max_lon: float
     ) -> str:
         params = {
-            'cityId': '310000',
+            'cityId': self.city_code,
             'dataSource': 'ESF',
             'groupType': 'community',
             'maxLatitude': max_lat,
@@ -110,8 +95,8 @@ class BeikeMapSpider:
             .first()
         ):
             step = 0.05
-            lat_range = float_range(self.MIN_LAT, self.MAX_LAT, step)
-            lon_range = float_range(self.MIN_LON, self.MAX_LON, step)
+            lat_range = float_range(self.min_lat, self.max_lat, step)
+            lon_range = float_range(self.min_lon, self.max_lon, step)
             for lat, lon in product(lat_range, lon_range):
                 self.db_session.add(
                     CommunityProgress(
@@ -245,10 +230,9 @@ class BeikeMapSpider:
             self.db_session.commit()
             time.sleep(0.1)
 
-    @staticmethod
-    def get_house_list_url(community_id: int, page: int):
+    def get_house_list_url(self, community_id: int, page: int):
         params = {
-            'cityId': 310000,
+            'cityId': self.city_code,
             'dataSource': 'ESF',
             'curPage': page,
             'resblockId': community_id,
