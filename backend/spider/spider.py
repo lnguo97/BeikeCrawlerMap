@@ -18,29 +18,17 @@ from .models import (
 )
 
 
+import logging
+from pathlib import Path
+from datetime import datetime
+from sqlalchemy.orm import sessionmaker
+
+
 class BeikeMapSpider:
-    def __init__(self, city_name: str, Session: sessionmaker) -> None:
+    def __init__(self, city_code: str, Session: sessionmaker) -> None:
         self.ds = datetime.today().strftime(r'%Y%m%d')
         self.db_session = Session()
-        self.city = (
-            self.db_session.query(City)
-            .filter(City.name == city_name)
-            .first()
-        )
-        if not self.city:
-            raise ValueError(f'Invalid city name: {city_name}')
-        self.logger = None
-        self.headers = None
-        
-    def __enter__(self):
-        # initialize logger
-        self.logger = logging.getLogger('spider')
-        log_file = pathlib.Path(f'log/spider_{self.city_code}_{self.ds}.log')
-        file_handler = logging.FileHandler(log_file)
-        file_handler.setLevel(logging.INFO)
-        self.logger.addHandler(file_handler)
-
-        # initialize header
+        self.city_code = city_code
         self.headers = {
             'user-agent': (
                 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
@@ -49,15 +37,27 @@ class BeikeMapSpider:
                 'Safari/537.36'
             )
         }
+        self.logger = logging.getLogger(f'spider_{self.city_code}_{self.ds}')
+        self.logger.setLevel(logging.INFO)
+
+    def __enter__(self):
+        # add console handler
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.DEBUG)
+        self.logger.addHandler(console_handler)
+
+        # add file handler
+        log_file = Path(f'log/spider_{self.city_code}_{self.ds}.log')
+        log_file.parent.mkdir(parents=True, exist_ok=True)
+        file_handler = logging.FileHandler(log_file)
+        file_handler.setLevel(logging.INFO)
+        self.logger.addHandler(file_handler)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        # remove log file handler
         for handler in self.logger.handlers:
-            if isinstance(handler, logging.FileHandler):
-                self.logger.removeHandler(handler)
-        
-        # close database connection
+            self.logger.removeHandler(handler)
+            handler.close()
         self.db_session.close()
         
     def get_community_list_url(
@@ -92,6 +92,7 @@ class BeikeMapSpider:
             self.db_session
             .query(CommunityProgress)
             .filter(CommunityProgress.ds == self.ds)
+            .filter(CommunityProgress.city_code == self.city_code)
             .first()
         ):
             step = 0.05
@@ -101,11 +102,13 @@ class BeikeMapSpider:
                 self.db_session.add(
                     CommunityProgress(
                         ds=self.ds,
+                        city_code=self.city_code,
                         min_lat=lat, max_lat=round(lat + step, 2),
                         min_lon=lon, max_lon=round(lon + step, 2),
                     )
                 )
             self.db_session.commit()
+        self.logger.info('Community progress initialized')
 
     def crawl_community_list(self):
         if self.interrupted:
@@ -114,11 +117,12 @@ class BeikeMapSpider:
             self.db_session
             .query(CommunityProgress)
             .filter(CommunityProgress.ds == self.ds)
+            .filter(CommunityProgress.city_code == self.city_code)
             .filter(CommunityProgress.is_finished == 0)
             .all()
         )
         if not progresses:
-            self.logger.info(f'All communities are crawled for date {self.ds}')
+            self.logger.info(f'All communities are crawled')
             return
         for progress in progresses:
             self.logger.info(
@@ -143,11 +147,13 @@ class BeikeMapSpider:
                         self.db_session.query(Community)
                         .filter(Community.id == bubble['id'])
                         .filter(Community.ds == self.ds)
+                        .filter(Community.city_code == self.city_code)
                         .first()
                     ):
                         continue
-                    bubble['ds'] = self.ds
-                    self.db_session.add(Community(**bubble))
+                    self.db_session.add(Community(
+                        **bubble, ds=self.ds, city_code=self.city_code
+                    ))
             progress.is_finished = True
             self.db_session.commit()
             if self.interrupted:
@@ -161,13 +167,12 @@ class BeikeMapSpider:
             self.db_session
             .query(Community)
             .filter(Community.ds == self.ds)
+            .filter(Community.city_code == self.city_code)
             .filter(Community.is_detail_crawled == 0)
             .all()
         )
         if not communities:
-            self.logger.info(
-                f'All community details are crawled for date {self.ds}'
-            )
+            self.logger.info(f'All community details are crawled')
             return
         for community in communities:
             if self.interrupted:
@@ -248,18 +253,25 @@ class BeikeMapSpider:
             self.db_session
             .query(HouseProgress)
             .filter(HouseProgress.ds == self.ds)
+            .filter(HouseProgress.city_code == self.city_code)
             .first()
         ):
             communities = (
                 self.db_session
                 .query(Community.id)
                 .filter(Community.ds == self.ds)
+                .filter(Community.city_code == self.city_code)
                 .all()
             )
             for community in communities:
-                progress = HouseProgress(ds=self.ds, community_id=community.id)
+                progress = HouseProgress(
+                    ds=self.ds, 
+                    community_id=community.id, 
+                    city_code=self.city_code
+                )
                 self.db_session.add(progress)
             self.db_session.commit()
+        self.logger.info('House progress initialized')
         
     def crawl_house_list(self):
         if self.interrupted:
@@ -268,11 +280,12 @@ class BeikeMapSpider:
             self.db_session
             .query(HouseProgress)
             .filter(HouseProgress.ds == self.ds)
+            .filter(HouseProgress.city_code == self.city_code)
             .filter(HouseProgress.has_more == 1)
             .all()
         )
         if not progresses:
-            self.logger.info(f'All houses are crawled for date {self.ds}')
+            self.logger.info(f'All houses are crawled for')
             return
         for progress in progresses:
             if self.interrupted:
@@ -293,17 +306,19 @@ class BeikeMapSpider:
                         self.db_session.query(House)
                         .filter(House.community_id == progress.community_id)
                         .filter(House.ds == self.ds)
+                        .filter(House.city_code == self.city_code)
                         .filter(House.id == house_id)
                         .first()
                     ):
                         continue
-                    house['id'] = house_id
-                    house['tags'] = '|'.join(
-                        [tag['desc'] for tag in house['tags']]
-                    )
-                    house['ds'] = self.ds
-                    house['community_id'] = progress.community_id
-                    self.db_session.add(House(**house))
+                    self.db_session.add(House(
+                        **house,
+                        id=house_id,
+                        tags='|'.join([tag['desc'] for tag in house['tags']]),
+                        ds=self.ds,
+                        city_code=self.city_code,
+                        community_id=progress.community_id
+                    ))
                 progress.finished_page = page
                 progress.has_more = res.json()['data']['hasMore']
                 self.db_session.commit()
@@ -317,13 +332,12 @@ class BeikeMapSpider:
             self.db_session
             .query(House)
             .filter(House.ds == self.ds)
+            .filter(House.city_code == self.city_code)
             .filter(House.is_detail_crawled == 0)
             .all()
         )
         if not houses:
-            self.logger.info(
-                f'All house details are crawled for date {self.ds}'
-            )
+            self.logger.info(f'All house details are crawled')
             return
         for house in houses:
             if self.interrupted:

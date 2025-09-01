@@ -20,15 +20,6 @@ from spider.models import House, HouseProgress
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # initialize logger
-    pathlib.Path('log/').mkdir(parents=True, exist_ok=True)
-    logger = logging.getLogger(f'spider')
-    logger.setLevel(logging.DEBUG)
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.DEBUG)
-    logger.addHandler(console_handler)
-    app.state.logger = logger
-    
     # initialize database
     db_url = os.getenv('DATABASE_URL') or 'sqlite:///data/beike_house.db'
     engine = create_engine(db_url)
@@ -36,10 +27,12 @@ async def lifespan(app: FastAPI):
     app.state.Session = sessionmaker(bind=engine)
     
     # load city list
-    with open('resource/city_list.json') as f:
+    with open('data/city_list.json') as f:
         city_list = json.load(f)
     with app.state.Session() as session:
         for city in city_list:
+            if session.query(City).filter(City.name == city['name']).first():
+                continue
             session.add(City(**city))
         session.commit()
     
@@ -49,9 +42,18 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
-def start_spider(request: Request, city_name: str):
+@app.get('/city_list')
+async def get_city_list(request: Request):
+    with request.app.state.Session() as session:
+        city_list = session.query(City).all()
+    return {
+        city.name: city.code for city in city_list
+    }
+
+
+def start_spider(request: Request, city_code: str):
     try:
-        with BeikeMapSpider(city_name, request.app.state.Session) as spider:
+        with BeikeMapSpider(city_code, request.app.state.Session) as spider:
             request.app.state.spider = spider
             request.app.state.spider.run()
     finally:
@@ -60,12 +62,12 @@ def start_spider(request: Request, city_name: str):
 
 @app.post('/run_spider')
 async def run_spider(
-    city_name: str, request: Request, background_tasks: BackgroundTasks
+    city_code: str, request: Request, background_tasks: BackgroundTasks
 ):
     background_tasks.add_task(
-        start_spider, request=request, city_name=city_name
+        start_spider, request=request, city_code=city_code
     )
-    return {'msg': 'spider started', 'city_code': ''}
+    return {'msg': 'spider started', 'city_code': city_code}
 
 
 @app.get('/is_spider_running')
@@ -140,11 +142,7 @@ async def get_spider_log():
     return {'ds': today_ds, 'spider_log': spider_log}
 
 
-@app.get('/city_list')
-async def get_city_list():
-    with open('resource/city_list.json') as f:
-        city_list = json.load(f)
-    return city_list
+
 
 
 # @app.get('/login_qr_code')

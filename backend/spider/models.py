@@ -1,32 +1,37 @@
 from datetime import datetime
 
-from sqlalchemy import String, Text, Float, Integer, DateTime, Boolean
-from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
+from sqlalchemy import String, Text, Float, Integer, Boolean, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase, relationship
 
 
 class Base(DeclarativeBase):
     pass
 
 
-# class Cookie(Base):
-#     __tablename__ = 'cookies'
-
-#     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-#     crawl_time: Mapped[datetime] = mapped_column(DateTime)
-#     text: Mapped[str] = mapped_column(Text)
-
-
 class City(Base):
     __tablename__ = "cities"
     
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    code: Mapped[str] = mapped_column(String(8), primary_key=True)
     name: Mapped[str] = mapped_column(String(8))
     url: Mapped[str] = mapped_column(String(256))
-    code: Mapped[str] = mapped_column(String(8))
+    
     min_lat: Mapped[float] = mapped_column(Float)
     max_lat: Mapped[float] = mapped_column(Float)
     min_lon: Mapped[float] = mapped_column(Float)
     max_lon: Mapped[float] = mapped_column(Float)
+    
+    communities: Mapped[list["Community"]] = relationship(
+        back_populates="city", cascade="all, delete-orphan"
+    )
+    community_progresses: Mapped[list["CommunityProgress"]] = relationship(
+        back_populates="city", cascade="all, delete-orphan"
+    )
+    houses: Mapped[list["House"]] = relationship(
+        back_populates="city", cascade="all, delete-orphan"
+    )
+    house_progresses: Mapped[list["HouseProgress"]] = relationship(
+        back_populates="city", cascade="all, delete-orphan"
+    )
 
 
 class Community(Base):
@@ -34,7 +39,11 @@ class Community(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     ds: Mapped[str] = mapped_column(String(8), primary_key=True)
-    city_code: Mapped[str] = mapped_column(String(8), primary_key=True)
+    city_code: Mapped[str] = mapped_column(
+        String(8), ForeignKey('cities.code'), primary_key=True
+    )
+    
+    city: Mapped["City"] = relationship(back_populates="communities")
     
     index: Mapped[int | None] = mapped_column(Integer, nullable=True)
     fullSpell: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -74,7 +83,12 @@ class CommunityProgress(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     ds: Mapped[str] = mapped_column(String(8))
-    city_code: Mapped[str] = mapped_column(String(8))
+    city_code: Mapped[str] = mapped_column(
+        String(8), 
+        ForeignKey('cities.code')
+    )
+    
+    city: Mapped["City"] = relationship(back_populates="community_progresses")
 
     min_lat: Mapped[float] = mapped_column(Float)
     max_lat: Mapped[float] = mapped_column(Float)
@@ -88,8 +102,12 @@ class House(Base):
     
     id: Mapped[int] = mapped_column(primary_key=True)
     ds: Mapped[str] = mapped_column(String(8), primary_key=True)
-    city_code: Mapped[str] = mapped_column(String(8), primary_key=True)
     community_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    city_code: Mapped[str] = mapped_column(
+        String(8), ForeignKey('cities.code'), primary_key=True
+    )
+    
+    city: Mapped["City"] = relationship(back_populates="houses")
 
     index: Mapped[int | None] = mapped_column(Integer, nullable=True)
     title: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -124,8 +142,14 @@ class HouseProgress(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     ds: Mapped[str] = mapped_column(String(8))
-    city_code: Mapped[str] = mapped_column(String(8))
+    city_code: Mapped[str] = mapped_column(
+        String(8), 
+        ForeignKey('cities.code')
+    )
+    
+    city: Mapped["City"] = relationship(back_populates="house_progresses")
     
     community_id: Mapped[str] = mapped_column(String(20))
     finished_page: Mapped[int] = mapped_column(Integer, default=0)
     has_more: Mapped[bool] = mapped_column(Boolean, default=True)
+    
