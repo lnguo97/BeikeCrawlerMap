@@ -1,7 +1,7 @@
 [
   {
     "name": "合肥",
-    "url": "https:///hf.ke.com",
+    "url": "https://hf.ke.com",
     "code": "340100",
     "min_lat": 116.687475,
     "max_lat": 117.973318,
@@ -10,7 +10,7 @@
   },
   {
     "name": "芜湖",
-    "url": "https:///wuhu.ke.com",
+    "url": "https://wuhu.ke.com",
     "code": "340200",
     "min_lat": 117.482556,
     "max_lat": 118.733578,
@@ -19,7 +19,7 @@
   },
   {
     "name": "马鞍山",
-    "url": "https:///mas.ke.com",
+    "url": "https://mas.ke.com",
     "code": "340500",
     "min_lat": 117.901366,
     "max_lat": 118.886286,
@@ -28,7 +28,7 @@
   },
   {
     "name": "安庆",
-    "url": "https:///aq.ke.com",
+    "url": "https://aq.ke.com",
     "code": "340800",
     "min_lat": 115.762324,
     "max_lat": 117.252585,
@@ -37,7 +37,7 @@
   },
   {
     "name": "阜阳",
-    "url": "https:///fy.ke.com",
+    "url": "https://fy.ke.com",
     "code": "341200",
     "min_lat": 114.882751,
     "max_lat": 116.6351,
@@ -46,7 +46,7 @@
   },
   {
     "name": "六安",
-    "url": "https:///la.ke.com",
+    "url": "https://la.ke.com",
     "code": "341500",
     "min_lat": 115.371154,
     "max_lat": 117.252611,
@@ -55,7 +55,7 @@
   },
   {
     "name": "北京",
-    "url": "https:///bj.ke.com",
+    "url": "https://bj.ke.com",
     "code": "110000",
     "min_lat": 115.423411,
     "max_lat": 117.514625,
@@ -64,7 +64,7 @@
   },
   {
     "name": "重庆",
-    "url": "https:///cq.ke.com",
+    "url": "https://cq.ke.com",
     "code": "500000",
     "min_lat": 105.28976,
     "max_lat": 110.199858,
@@ -73,7 +73,7 @@
   },
   {
     "name": "福州",
-    "url": "https:///fz.ke.com",
+    "url": "https://fz.ke.com",
     "code": "350100",
     "min_lat": 118.38209,
     "max_lat": 120.516189,
@@ -82,7 +82,7 @@
   },
   {
     "name": "厦门",
-    "url": "https:///xm.ke.com",
+    "url": "https://xm.ke.com",
     "code": "350200",
     "min_lat": 117.886012,
     "max_lat": 118.414778,
@@ -91,7 +91,7 @@
   },
   {
     "name": "泉州",
-    "url": "https:///quanzhou.ke.com",
+    "url": "https://quanzhou.ke.com",
     "code": "350500",
     "min_lat": 117.555387,
     "max_lat": 119.047634,
@@ -100,7 +100,7 @@
   },
   {
     "name": "龙岩",
-    "url": "https:///ly.fang.ke.com",
+    "url": "https://ly.fang.ke.com",
     "code": "350800",
     "min_lat": 115.85229,
     "max_lat": 117.750338,
@@ -109,7 +109,7 @@
   },
   {
     "name": "漳州",
-    "url": "https:///zhangzhou.ke.com",
+    "url": "https://zhangzhou.ke.com",
     "code": "350600",
     "min_lat": 116.895719,
     "max_lat": 118.24053,
@@ -118,7 +118,7 @@
   },
   {
     "name": "广州",
-    "url": "https:///gz.ke.com",
+    "url": "https://gz.ke.com",
     "code": "440100",
     "min_lat": 112.958507,
     "max_lat": 114.059957,
@@ -127,7 +127,7 @@
   },
   {
     "name": "深圳",
-    "url": "https:///sz.ke.com",
+    "url": "https://sz.ke.com",
     "code": "440300",
     "min_lat": 113.751453,
     "max_lat": 114.628466,
@@ -136,7 +136,7 @@
   },
   {
     "name": "珠海",
-    "url": "https:///zh.ke.com",
+    "url": "https://zh.ke.com",
     "code": "440400",
     "min_lat": 113.084824,
     "max_lat": 114.325757,
@@ -145,7 +145,7 @@
   },
   {
     "name": "佛山",
-    "url": "https:///fs.ke.com",
+    "url": "https://fs.ke.com",
     "code": "440600",
     "min_lat": 112.390818,
     "max_lat": 113.393428,
@@ -154,7 +154,7 @@
   },
   {
     "name": "江门",
-    "url": "https:///jiangmen.ke.com",
+    "url": "https://jiangmen.ke.com",
     "code": "440700",
     "min_lat": 112.003474,
     "max_lat": 113.262638,
@@ -163,7 +163,7 @@
   },
   {
     "name": "湛江",
-    "url": "https:///zhanjiang.ke.com",
+    "url": "https://zhanjiang.ke.com",
     "code": "440800",
     "min_lat": 109.654936,
     "max_lat": 110.977023,
@@ -172,7 +172,7 @@
   },
   {
     "name": "肇庆",
-    "url": "https:///zq.fang.ke.com",
+    "url": "https://zq.fang.ke.com",
     "code": "441200",
     "min_lat": 111.361964,
     "max_lat": 112.88328,
@@ -181,7 +181,7 @@
   },
   {
     "name": "惠州",
-    "url": "https:///hui.ke.com",
+    "url": "https://hui.ke.com",
     "code": "441300",
     "min_lat": 113.813769,
     "max_lat": 115.426531,
@@ -190,7 +190,7 @@
   },
   {
     "name": "东莞",
-    "url": "https:///dg.ke.com",
+    "url": "https://dg.ke.com",
     "code": "441900",
     "min_lat": 113.521542,
     "max_lat": 114.260312,
@@ -199,7 +199,7 @@
   },
   {
     "name": "中山",
-    "url": "https:///zs.ke.com",
+    "url": "https://zs.ke.com",
     "code": "442000",
     "min_lat": 113.157014,
     "max_lat": 113.740462,
@@ -208,7 +208,7 @@
   },
   {
     "name": "清远",
-    "url": "https:///qy.ke.com",
+    "url": "https://qy.ke.com",
     "code": "441800",
     "min_lat": 111.927434,
     "max_lat": 113.931134,
@@ -217,7 +217,7 @@
   },
   {
     "name": "云浮",
-    "url": "https:///yf.fang.ke.com/loupan",
+    "url": "https://yf.fang.ke.com/loupan",
     "code": "445300",
     "min_lat": 111.056988,
     "max_lat": 112.521777,
@@ -226,7 +226,7 @@
   },
   {
     "name": "南宁",
-    "url": "https:///nn.ke.com",
+    "url": "https://nn.ke.com",
     "code": "450100",
     "min_lat": 107.329323,
     "max_lat": 109.621646,
@@ -235,7 +235,7 @@
   },
   {
     "name": "柳州",
-    "url": "https:///liuzhou.ke.com",
+    "url": "https://liuzhou.ke.com",
     "code": "450200",
     "min_lat": 108.587687,
     "max_lat": 110.177824,
@@ -244,7 +244,7 @@
   },
   {
     "name": "桂林",
-    "url": "https:///gl.ke.com",
+    "url": "https://gl.ke.com",
     "code": "450300",
     "min_lat": 109.617685,
     "max_lat": 111.492074,
@@ -253,7 +253,7 @@
   },
   {
     "name": "北海",
-    "url": "https:///bh.ke.com",
+    "url": "https://bh.ke.com",
     "code": "450500",
     "min_lat": 108.850295,
     "max_lat": 109.788923,
@@ -262,16 +262,16 @@
   },
   {
     "name": "防城港",
-    "url": "https:///fcg.ke.com",
-    "code": "450603",
+    "url": "https://fcg.ke.com",
+    "code": "450600",
     "min_lat": 107.481501,
-    "max_lat": 108.529268,
+    "max_lat": 108.597035,
     "min_lon": 21.489298,
-    "max_lon": 21.99441
+    "max_lon": 22.372281
   },
   {
     "name": "贵阳",
-    "url": "https:///gy.ke.com",
+    "url": "https://gy.ke.com",
     "code": "520100",
     "min_lat": 106.125092,
     "max_lat": 107.279236,
@@ -280,7 +280,7 @@
   },
   {
     "name": "黔南",
-    "url": "https:///qn.fang.ke.com",
+    "url": "https://qn.fang.ke.com",
     "code": "522700",
     "min_lat": 106.211615,
     "max_lat": 108.30543,
@@ -289,7 +289,7 @@
   },
   {
     "name": "遵义",
-    "url": "https:///zunyi.ke.com",
+    "url": "https://zunyi.ke.com",
     "code": "520300",
     "min_lat": 105.609351,
     "max_lat": 108.213695,
@@ -298,7 +298,7 @@
   },
   {
     "name": "黔西南布依族苗族自治州",
-    "url": "https:///qxn.fang.ke.com",
+    "url": "https://qxn.fang.ke.com",
     "code": "522300",
     "min_lat": 104.52865,
     "max_lat": 106.531605,
@@ -307,7 +307,7 @@
   },
   {
     "name": "兰州",
-    "url": "https:///lz.ke.com",
+    "url": "https://lz.ke.com",
     "code": "620100",
     "min_lat": 102.601275,
     "max_lat": 104.577268,
@@ -316,7 +316,7 @@
   },
   {
     "name": "天水",
-    "url": "https:///tianshui.ke.com",
+    "url": "https://tianshui.ke.com",
     "code": "620500",
     "min_lat": 104.57653,
     "max_lat": 106.717544,
@@ -325,7 +325,7 @@
   },
   {
     "name": "石家庄",
-    "url": "https:///sjz.ke.com",
+    "url": "https://sjz.ke.com",
     "code": "130100",
     "min_lat": 113.525437,
     "max_lat": 115.483611,
@@ -334,7 +334,7 @@
   },
   {
     "name": "唐山",
-    "url": "https:///ts.ke.com",
+    "url": "https://ts.ke.com",
     "code": "130200",
     "min_lat": 117.503464,
     "max_lat": 119.319506,
@@ -343,7 +343,7 @@
   },
   {
     "name": "邯郸",
-    "url": "https:///hd.ke.com",
+    "url": "https://hd.ke.com",
     "code": "130400",
     "min_lat": 113.465369,
     "max_lat": 115.483553,
@@ -352,7 +352,7 @@
   },
   {
     "name": "邢台",
-    "url": "https:///xt.fang.ke.com",
+    "url": "https://xt.fang.ke.com",
     "code": "130500",
     "min_lat": 113.758151,
     "max_lat": 115.853918,
@@ -361,7 +361,7 @@
   },
   {
     "name": "保定",
-    "url": "https:///bd.ke.com",
+    "url": "https://bd.ke.com",
     "code": "130600",
     "min_lat": 113.767545,
     "max_lat": 116.335359,
@@ -370,7 +370,7 @@
   },
   {
     "name": "廊坊",
-    "url": "https:///lf.ke.com",
+    "url": "https://lf.ke.com",
     "code": "131000",
     "min_lat": 116.116676,
     "max_lat": 117.259987,
@@ -379,16 +379,16 @@
   },
   {
     "name": "承德",
-    "url": "https:///chengde.ke.com",
-    "code": "130821",
-    "min_lat": 117.500597,
-    "max_lat": 118.563073,
-    "min_lon": 40.570263,
-    "max_lon": 41.47129
+    "url": "https://chengde.ke.com",
+    "code": "130800",
+    "min_lat": 115.909991,
+    "max_lat": 119.249371,
+    "min_lon": 40.192023,
+    "max_lon": 42.619718
   },
   {
     "name": "秦皇岛",
-    "url": "https:///qhd.ke.com",
+    "url": "https://qhd.ke.com",
     "code": "130300",
     "min_lat": 118.568376,
     "max_lat": 119.872492,
@@ -397,16 +397,16 @@
   },
   {
     "name": "张家口",
-    "url": "https:///zjk.ke.com",
-    "code": "620525",
-    "min_lat": 105.905243,
-    "max_lat": 106.579493,
-    "min_lon": 34.737871,
-    "max_lon": 35.172128
+    "url": "https://zjk.ke.com",
+    "code": "130700",
+    "min_lat": 113.819304,
+    "max_lat": 116.465844,
+    "min_lon": 39.55574,
+    "max_lon": 42.149634
   },
   {
     "name": "哈尔滨",
-    "url": "https:///hrb.ke.com",
+    "url": "https://hrb.ke.com",
     "code": "230100",
     "min_lat": 125.687894,
     "max_lat": 130.240839,
@@ -415,7 +415,7 @@
   },
   {
     "name": "郑州",
-    "url": "https:///zz.ke.com",
+    "url": "https://zz.ke.com",
     "code": "410100",
     "min_lat": 112.721177,
     "max_lat": 114.220961,
@@ -424,7 +424,7 @@
   },
   {
     "name": "开封",
-    "url": "https:///kf.ke.com",
+    "url": "https://kf.ke.com",
     "code": "410200",
     "min_lat": 113.895237,
     "max_lat": 115.267246,
@@ -433,7 +433,7 @@
   },
   {
     "name": "洛阳",
-    "url": "https:///luoyang.ke.com",
+    "url": "https://luoyang.ke.com",
     "code": "410300",
     "min_lat": 111.135184,
     "max_lat": 112.984738,
@@ -442,7 +442,7 @@
   },
   {
     "name": "平顶山",
-    "url": "https:///pds.ke.com",
+    "url": "https://pds.ke.com",
     "code": "410400",
     "min_lat": 112.247705,
     "max_lat": 113.689889,
@@ -451,25 +451,25 @@
   },
   {
     "name": "安阳",
-    "url": "https:///ay.fang.ke.com",
-    "code": "410522",
-    "min_lat": 113.933987,
-    "max_lat": 114.765486,
-    "min_lon": 35.986232,
-    "max_lon": 36.359057
+    "url": "https://ay.fang.ke.com",
+    "code": "410500",
+    "min_lat": 113.636861,
+    "max_lat": 114.987602,
+    "min_lon": 35.204806,
+    "max_lon": 36.36656
   },
   {
     "name": "新乡",
-    "url": "https:///xinxiang.ke.com",
-    "code": "410721",
-    "min_lat": 113.704601,
-    "max_lat": 114.065067,
-    "min_lon": 35.059068,
-    "max_lon": 35.364598
+    "url": "https://xinxiang.ke.com",
+    "code": "410700",
+    "min_lat": 113.383155,
+    "max_lat": 115.016505,
+    "min_lon": 34.877702,
+    "max_lon": 35.839209
   },
   {
     "name": "焦作",
-    "url": "https:///jiaozuo.fang.ke.com",
+    "url": "https://jiaozuo.fang.ke.com",
     "code": "410800",
     "min_lat": 112.568714,
     "max_lat": 113.649769,
@@ -478,16 +478,16 @@
   },
   {
     "name": "濮阳",
-    "url": "https:///py.ke.com",
-    "code": "410928",
+    "url": "https://py.ke.com",
+    "code": "410900",
     "min_lat": 114.869189,
-    "max_lat": 115.418607,
+    "max_lat": 116.100242,
     "min_lon": 35.332126,
-    "max_lon": 35.797943
+    "max_lon": 36.212988
   },
   {
     "name": "许昌",
-    "url": "https:///xc.ke.com",
+    "url": "https://xc.ke.com",
     "code": "411000",
     "min_lat": 113.064084,
     "max_lat": 114.326567,
@@ -496,7 +496,7 @@
   },
   {
     "name": "漯河",
-    "url": "https:///luohe.fang.ke.com",
+    "url": "https://luohe.fang.ke.com",
     "code": "411100",
     "min_lat": 113.455615,
     "max_lat": 114.295939,
@@ -505,7 +505,7 @@
   },
   {
     "name": "南阳",
-    "url": "https:///ny.fang.ke.com",
+    "url": "https://ny.fang.ke.com",
     "code": "411300",
     "min_lat": 110.982874,
     "max_lat": 113.814453,
@@ -514,7 +514,7 @@
   },
   {
     "name": "商丘",
-    "url": "https:///shangqiu.fang.ke.com",
+    "url": "https://shangqiu.fang.ke.com",
     "code": "411400",
     "min_lat": 114.827987,
     "max_lat": 116.651641,
@@ -523,7 +523,7 @@
   },
   {
     "name": "周口",
-    "url": "https:///zk.ke.com",
+    "url": "https://zk.ke.com",
     "code": "411600",
     "min_lat": 114.090153,
     "max_lat": 115.654332,
@@ -532,7 +532,7 @@
   },
   {
     "name": "驻马店",
-    "url": "https:///zmd.ke.com",
+    "url": "https://zmd.ke.com",
     "code": "411700",
     "min_lat": 113.097764,
     "max_lat": 115.219704,
@@ -541,7 +541,7 @@
   },
   {
     "name": "济源",
-    "url": "https:///jiyuan.fang.ke.com",
+    "url": "https://jiyuan.fang.ke.com",
     "code": "419001",
     "min_lat": 112.035077,
     "max_lat": 112.771543,
@@ -550,7 +550,7 @@
   },
   {
     "name": "武汉",
-    "url": "https:///wh.ke.com",
+    "url": "https://wh.ke.com",
     "code": "420100",
     "min_lat": 113.703924,
     "max_lat": 115.082572,
@@ -559,16 +559,16 @@
   },
   {
     "name": "黄石",
-    "url": "https:///huangshi.ke.com",
-    "code": "420202",
-    "min_lat": 115.008749,
-    "max_lat": 115.101734,
-    "min_lon": 30.205534,
-    "max_lon": 30.261657
+    "url": "https://huangshi.ke.com",
+    "code": "420200",
+    "min_lat": 114.531394,
+    "max_lat": 115.511592,
+    "min_lon": 29.508951,
+    "max_lon": 30.326216
   },
   {
     "name": "宜昌",
-    "url": "https:///yichang.ke.com",
+    "url": "https://yichang.ke.com",
     "code": "420500",
     "min_lat": 110.255636,
     "max_lat": 112.086441,
@@ -577,7 +577,7 @@
   },
   {
     "name": "襄阳",
-    "url": "https:///xy.ke.com",
+    "url": "https://xy.ke.com",
     "code": "420600",
     "min_lat": 110.763974,
     "max_lat": 113.118715,
@@ -586,7 +586,7 @@
   },
   {
     "name": "鄂州",
-    "url": "https:///ez.ke.com",
+    "url": "https://ez.ke.com",
     "code": "420700",
     "min_lat": 114.503813,
     "max_lat": 115.088665,
@@ -595,7 +595,7 @@
   },
   {
     "name": "孝感",
-    "url": "https:///xg.ke.com",
+    "url": "https://xg.ke.com",
     "code": "420900",
     "min_lat": 113.316679,
     "max_lat": 114.59172,
@@ -604,16 +604,16 @@
   },
   {
     "name": "荆州",
-    "url": "https:///jingzhou.ke.com",
-    "code": "421003",
-    "min_lat": 111.908894,
-    "max_lat": 112.345594,
-    "min_lon": 30.115447,
+    "url": "https://jingzhou.ke.com",
+    "code": "421000",
+    "min_lat": 111.243799,
+    "max_lat": 114.091884,
+    "min_lon": 29.430766,
     "max_lon": 30.659381
   },
   {
     "name": "仙桃",
-    "url": "https:///xiantao.ke.com",
+    "url": "https://xiantao.ke.com",
     "code": "429004",
     "min_lat": 112.943424,
     "max_lat": 113.824757,
@@ -622,7 +622,7 @@
   },
   {
     "name": "黄冈",
-    "url": "https:///hg.ke.com",
+    "url": "https://hg.ke.com",
     "code": "421100",
     "min_lat": 114.402123,
     "max_lat": 116.137158,
@@ -631,7 +631,7 @@
   },
   {
     "name": "咸宁",
-    "url": "https:///xn.fang.ke.com",
+    "url": "https://xn.fang.ke.com",
     "code": "421200",
     "min_lat": 113.538307,
     "max_lat": 114.969234,
@@ -640,16 +640,16 @@
   },
   {
     "name": "长沙",
-    "url": "https:///cs.ke.com",
-    "code": "430121",
-    "min_lat": 112.978505,
-    "max_lat": 113.507366,
-    "min_lon": 28.030873,
+    "url": "https://cs.ke.com",
+    "code": "430100",
+    "min_lat": 111.896256,
+    "max_lat": 114.261264,
+    "min_lon": 27.848072,
     "max_lon": 28.661612
   },
   {
     "name": "株洲",
-    "url": "https:///zhuzhou.ke.com",
+    "url": "https://zhuzhou.ke.com",
     "code": "430200",
     "min_lat": 112.969421,
     "max_lat": 114.110128,
@@ -658,34 +658,34 @@
   },
   {
     "name": "湘潭",
-    "url": "https:///xiangtan.ke.com",
-    "code": "430321",
-    "min_lat": 112.421278,
-    "max_lat": 113.058939,
+    "url": "https://xiangtan.ke.com",
+    "code": "430300",
+    "min_lat": 111.999701,
+    "max_lat": 113.09128,
     "min_lon": 27.338039,
-    "max_lon": 27.941886
+    "max_lon": 28.073564
   },
   {
     "name": "衡阳",
-    "url": "https:///hy.ke.com",
-    "code": "430421",
-    "min_lat": 112.001621,
-    "max_lat": 112.751887,
-    "min_lon": 26.872748,
-    "max_lon": 27.370185
+    "url": "https://hy.ke.com",
+    "code": "430400",
+    "min_lat": 111.543611,
+    "max_lat": 113.283946,
+    "min_lon": 26.101051,
+    "max_lon": 27.468306
   },
   {
     "name": "岳阳",
-    "url": "https:///yy.ke.com",
-    "code": "430621",
-    "min_lat": 112.772595,
-    "max_lat": 113.737148,
-    "min_lon": 28.951028,
-    "max_lon": 29.510374
+    "url": "https://yy.ke.com",
+    "code": "430600",
+    "min_lat": 112.315726,
+    "max_lat": 114.157127,
+    "min_lon": 28.422183,
+    "max_lon": 29.848931
   },
   {
     "name": "常德",
-    "url": "https:///changde.ke.com",
+    "url": "https://changde.ke.com",
     "code": "430700",
     "min_lat": 110.491577,
     "max_lat": 112.306387,
@@ -694,7 +694,7 @@
   },
   {
     "name": "永州",
-    "url": "https:///yongzhou.ke.com",
+    "url": "https://yongzhou.ke.com",
     "code": "431100",
     "min_lat": 110.951707,
     "max_lat": 112.458429,
@@ -703,7 +703,7 @@
   },
   {
     "name": "湘西土家族苗族自治州",
-    "url": "https:///xx.ke.com",
+    "url": "https://xx.ke.com",
     "code": "433100",
     "min_lat": 109.180592,
     "max_lat": 110.396331,
@@ -712,7 +712,7 @@
   },
   {
     "name": "海口",
-    "url": "https:///hk.ke.com",
+    "url": "https://hk.ke.com",
     "code": "460100",
     "min_lat": 110.106537,
     "max_lat": 110.713607,
@@ -721,7 +721,7 @@
   },
   {
     "name": "三亚",
-    "url": "https:///san.ke.com",
+    "url": "https://san.ke.com",
     "code": "460200",
     "min_lat": 108.932391,
     "max_lat": 109.810949,
@@ -730,7 +730,7 @@
   },
   {
     "name": "五指山",
-    "url": "https:///wzs.fang.ke.com",
+    "url": "https://wzs.fang.ke.com",
     "code": "469001",
     "min_lat": 109.324317,
     "max_lat": 109.731961,
@@ -739,7 +739,7 @@
   },
   {
     "name": "万宁",
-    "url": "https:///wn.ke.com",
+    "url": "https://wn.ke.com",
     "code": "469006",
     "min_lat": 110.012657,
     "max_lat": 110.610573,
@@ -748,7 +748,7 @@
   },
   {
     "name": "澄迈",
-    "url": "https:///cm.ke.com",
+    "url": "https://cm.ke.com",
     "code": "469023",
     "min_lat": 109.724977,
     "max_lat": 110.262595,
@@ -757,7 +757,7 @@
   },
   {
     "name": "乐东",
-    "url": "https:///ld.fang.ke.com",
+    "url": "https://ld.fang.ke.com",
     "code": "469027",
     "min_lat": 108.639396,
     "max_lat": 109.407977,
@@ -766,7 +766,7 @@
   },
   {
     "name": "陵水",
-    "url": "https:///ls.ke.com",
+    "url": "https://ls.ke.com",
     "code": "469028",
     "min_lat": 109.755697,
     "max_lat": 110.213961,
@@ -775,7 +775,7 @@
   },
   {
     "name": "长春",
-    "url": "https:///cc.ke.com",
+    "url": "https://cc.ke.com",
     "code": "220100",
     "min_lat": 124.015699,
     "max_lat": 127.093726,
@@ -784,7 +784,7 @@
   },
   {
     "name": "吉林",
-    "url": "https:///jl.ke.com",
+    "url": "https://jl.ke.com",
     "code": "220200",
     "min_lat": 125.645738,
     "max_lat": 127.924725,
@@ -793,7 +793,7 @@
   },
   {
     "name": "南京",
-    "url": "https:///nj.ke.com",
+    "url": "https://nj.ke.com",
     "code": "320100",
     "min_lat": 118.343137,
     "max_lat": 119.241663,
@@ -802,7 +802,7 @@
   },
   {
     "name": "无锡",
-    "url": "https:///wx.ke.com",
+    "url": "https://wx.ke.com",
     "code": "320200",
     "min_lat": 119.51966,
     "max_lat": 120.605759,
@@ -811,7 +811,7 @@
   },
   {
     "name": "徐州",
-    "url": "https:///xz.ke.com",
+    "url": "https://xz.ke.com",
     "code": "320300",
     "min_lat": 116.362723,
     "max_lat": 118.674072,
@@ -820,7 +820,7 @@
   },
   {
     "name": "常州",
-    "url": "https:///changzhou.ke.com",
+    "url": "https://changzhou.ke.com",
     "code": "320400",
     "min_lat": 119.140539,
     "max_lat": 120.205741,
@@ -829,7 +829,7 @@
   },
   {
     "name": "苏州",
-    "url": "https:///su.ke.com",
+    "url": "https://su.ke.com",
     "code": "320500",
     "min_lat": 119.920013,
     "max_lat": 121.372212,
@@ -838,7 +838,7 @@
   },
   {
     "name": "常熟",
-    "url": "https:///changshu.ke.com",
+    "url": "https://changshu.ke.com",
     "code": "320581",
     "min_lat": 120.543085,
     "max_lat": 121.101216,
@@ -847,16 +847,16 @@
   },
   {
     "name": "张家港",
-    "url": "https:///zjg.ke.com",
-    "code": "620525",
-    "min_lat": 105.905243,
-    "max_lat": 106.579493,
-    "min_lon": 34.737871,
-    "max_lon": 35.172128
+    "url": "https://zjg.ke.com",
+    "code": "320582",
+    "min_lat": 120.368882,
+    "max_lat": 120.889815,
+    "min_lon": 31.720453,
+    "max_lon": 32.045827
   },
   {
     "name": "昆山",
-    "url": "https:///ks.ke.com",
+    "url": "https://ks.ke.com",
     "code": "320583",
     "min_lat": 120.808456,
     "max_lat": 121.161286,
@@ -865,7 +865,7 @@
   },
   {
     "name": "南通",
-    "url": "https:///nt.ke.com",
+    "url": "https://nt.ke.com",
     "code": "320600",
     "min_lat": 120.202315,
     "max_lat": 121.975185,
@@ -874,25 +874,25 @@
   },
   {
     "name": "连云港",
-    "url": "https:///lyg.ke.com",
-    "code": "320703",
-    "min_lat": 119.154065,
-    "max_lat": 119.679762,
-    "min_lon": 34.468647,
-    "max_lon": 34.833945
+    "url": "https://lyg.ke.com",
+    "code": "320700",
+    "min_lat": 118.405371,
+    "max_lat": 119.87844,
+    "min_lon": 33.980694,
+    "max_lon": 35.124513
   },
   {
     "name": "淮安",
-    "url": "https:///ha.ke.com",
-    "code": "320803",
-    "min_lat": 118.990618,
-    "max_lat": 119.618348,
-    "min_lon": 33.283461,
-    "max_lon": 33.760213
+    "url": "https://ha.ke.com",
+    "code": "320800",
+    "min_lat": 118.201926,
+    "max_lat": 119.645995,
+    "min_lon": 32.716039,
+    "max_lon": 34.095682
   },
   {
     "name": "盐城",
-    "url": "https:///yc.ke.com",
+    "url": "https://yc.ke.com",
     "code": "320900",
     "min_lat": 119.456469,
     "max_lat": 120.981368,
@@ -901,7 +901,7 @@
   },
   {
     "name": "扬州",
-    "url": "https:///yz.fang.ke.com",
+    "url": "https://yz.fang.ke.com",
     "code": "321000",
     "min_lat": 119.006829,
     "max_lat": 119.911961,
@@ -910,7 +910,7 @@
   },
   {
     "name": "镇江",
-    "url": "https:///zj.ke.com",
+    "url": "https://zj.ke.com",
     "code": "321100",
     "min_lat": 118.969449,
     "max_lat": 119.971851,
@@ -919,7 +919,7 @@
   },
   {
     "name": "泰州",
-    "url": "https:///tz.fang.ke.com/loupan",
+    "url": "https://tz.fang.ke.com/loupan",
     "code": "321200",
     "min_lat": 119.640227,
     "max_lat": 120.5591,
@@ -928,7 +928,7 @@
   },
   {
     "name": "丹阳",
-    "url": "https:///danyang.ke.com",
+    "url": "https://danyang.ke.com",
     "code": "321181",
     "min_lat": 119.400717,
     "max_lat": 119.898969,
@@ -937,7 +937,7 @@
   },
   {
     "name": "海门",
-    "url": "https:///haimen.ke.com",
+    "url": "https://haimen.ke.com",
     "code": "320614",
     "min_lat": 121.034807,
     "max_lat": 121.544484,
@@ -946,7 +946,7 @@
   },
   {
     "name": "句容",
-    "url": "https:///jr.ke.com",
+    "url": "https://jr.ke.com",
     "code": "321183",
     "min_lat": 118.969449,
     "max_lat": 119.385127,
@@ -955,7 +955,7 @@
   },
   {
     "name": "启东",
-    "url": "https:///qidong.ke.com",
+    "url": "https://qidong.ke.com",
     "code": "320681",
     "min_lat": 121.433283,
     "max_lat": 121.975185,
@@ -964,7 +964,7 @@
   },
   {
     "name": "如皋",
-    "url": "https:///rg.ke.com",
+    "url": "https://rg.ke.com",
     "code": "320682",
     "min_lat": 120.343216,
     "max_lat": 120.838508,
@@ -973,7 +973,7 @@
   },
   {
     "name": "江阴",
-    "url": "https:///jy.ke.com",
+    "url": "https://jy.ke.com",
     "code": "320281",
     "min_lat": 119.989132,
     "max_lat": 120.600023,
@@ -982,7 +982,7 @@
   },
   {
     "name": "海安",
-    "url": "https:///haian.ke.com",
+    "url": "https://haian.ke.com",
     "code": "320685",
     "min_lat": 120.202315,
     "max_lat": 120.98172,
@@ -991,16 +991,16 @@
   },
   {
     "name": "南昌",
-    "url": "https:///nc.ke.com",
-    "code": "360121",
-    "min_lat": 115.808159,
-    "max_lat": 116.324081,
-    "min_lon": 28.26829,
-    "max_lon": 28.960684
+    "url": "https://nc.ke.com",
+    "code": "360100",
+    "min_lat": 115.438705,
+    "max_lat": 116.565482,
+    "min_lon": 28.157839,
+    "max_lon": 29.122388
   },
   {
     "name": "景德镇",
-    "url": "https:///jdz.ke.com",
+    "url": "https://jdz.ke.com",
     "code": "360200",
     "min_lat": 116.957078,
     "max_lat": 117.70971,
@@ -1009,7 +1009,7 @@
   },
   {
     "name": "萍乡",
-    "url": "https:///pingxiang.ke.com",
+    "url": "https://pingxiang.ke.com",
     "code": "360300",
     "min_lat": 113.578186,
     "max_lat": 114.281953,
@@ -1018,7 +1018,7 @@
   },
   {
     "name": "九江",
-    "url": "https:///jiujiang.ke.com",
+    "url": "https://jiujiang.ke.com",
     "code": "360400",
     "min_lat": 113.94206,
     "max_lat": 116.900133,
@@ -1027,7 +1027,7 @@
   },
   {
     "name": "赣州",
-    "url": "https:///ganzhou.ke.com",
+    "url": "https://ganzhou.ke.com",
     "code": "360700",
     "min_lat": 113.913607,
     "max_lat": 116.638211,
@@ -1036,16 +1036,16 @@
   },
   {
     "name": "吉安",
-    "url": "https:///jian.ke.com",
-    "code": "360821",
-    "min_lat": 114.418615,
-    "max_lat": 115.062647,
-    "min_lon": 26.818756,
-    "max_lon": 27.628844
+    "url": "https://jian.ke.com",
+    "code": "360800",
+    "min_lat": 113.834587,
+    "max_lat": 115.935563,
+    "min_lon": 25.972184,
+    "max_lon": 27.962818
   },
   {
     "name": "宜春",
-    "url": "https:///ych.ke.com",
+    "url": "https://ych.ke.com",
     "code": "360900",
     "min_lat": 113.88873,
     "max_lat": 116.153803,
@@ -1054,7 +1054,7 @@
   },
   {
     "name": "抚州",
-    "url": "https:///fuzhou.ke.com",
+    "url": "https://fuzhou.ke.com",
     "code": "361000",
     "min_lat": 115.59217,
     "max_lat": 117.30609,
@@ -1063,7 +1063,7 @@
   },
   {
     "name": "上饶",
-    "url": "https:///sr.ke.com",
+    "url": "https://sr.ke.com",
     "code": "361100",
     "min_lat": 116.237892,
     "max_lat": 118.487106,
@@ -1072,7 +1072,7 @@
   },
   {
     "name": "沈阳",
-    "url": "https:///sy.ke.com",
+    "url": "https://sy.ke.com",
     "code": "210100",
     "min_lat": 122.422106,
     "max_lat": 123.814158,
@@ -1081,7 +1081,7 @@
   },
   {
     "name": "大连",
-    "url": "https:///dl.ke.com",
+    "url": "https://dl.ke.com",
     "code": "210200",
     "min_lat": 120.975301,
     "max_lat": 123.518921,
@@ -1090,16 +1090,16 @@
   },
   {
     "name": "抚顺",
-    "url": "https:///fushun.ke.com",
-    "code": "210421",
-    "min_lat": 123.721757,
-    "max_lat": 124.452248,
-    "min_lon": 41.454963,
-    "max_lon": 41.927966
+    "url": "https://fushun.ke.com",
+    "code": "210400",
+    "min_lat": 123.66357,
+    "max_lat": 125.490053,
+    "min_lon": 41.238835,
+    "max_lon": 42.478881
   },
   {
     "name": "丹东",
-    "url": "https:///dd.ke.com",
+    "url": "https://dd.ke.com",
     "code": "210600",
     "min_lat": 123.376898,
     "max_lat": 125.707761,
@@ -1108,7 +1108,7 @@
   },
   {
     "name": "呼和浩特",
-    "url": "https:///hhht.ke.com",
+    "url": "https://hhht.ke.com",
     "code": "150100",
     "min_lat": 110.517434,
     "max_lat": 112.311648,
@@ -1117,7 +1117,7 @@
   },
   {
     "name": "包头",
-    "url": "https:///baotou.ke.com",
+    "url": "https://baotou.ke.com",
     "code": "150200",
     "min_lat": 109.277392,
     "max_lat": 111.443465,
@@ -1126,7 +1126,7 @@
   },
   {
     "name": "赤峰",
-    "url": "https:///cf.ke.com",
+    "url": "https://cf.ke.com",
     "code": "150400",
     "min_lat": 116.356502,
     "max_lat": 120.987609,
@@ -1135,7 +1135,7 @@
   },
   {
     "name": "通辽",
-    "url": "https:///tongliao.ke.com",
+    "url": "https://tongliao.ke.com",
     "code": "150500",
     "min_lat": 119.248183,
     "max_lat": 123.720878,
@@ -1144,16 +1144,16 @@
   },
   {
     "name": "巴彦淖尔",
-    "url": "https:///byne.ke.com",
-    "code": "230126",
-    "min_lat": 126.763799,
-    "max_lat": 127.708649,
-    "min_lon": 45.908288,
-    "max_lon": 46.674386
+    "url": "https://byne.ke.com",
+    "code": "150800",
+    "min_lat": 105.201607,
+    "max_lat": 109.903395,
+    "min_lon": 40.168057,
+    "max_lon": 42.460344
   },
   {
     "name": "银川",
-    "url": "https:///yinchuan.ke.com",
+    "url": "https://yinchuan.ke.com",
     "code": "640100",
     "min_lat": 105.821022,
     "max_lat": 106.885679,
@@ -1162,7 +1162,7 @@
   },
   {
     "name": "太原",
-    "url": "https:///ty.ke.com",
+    "url": "https://ty.ke.com",
     "code": "140100",
     "min_lat": 111.515924,
     "max_lat": 113.156613,
@@ -1171,16 +1171,16 @@
   },
   {
     "name": "大同",
-    "url": "https:///dt.ke.com",
-    "code": "230606",
-    "min_lat": 124.22764,
-    "max_lat": 125.114669,
-    "min_lon": 45.771713,
-    "max_lon": 46.448739
+    "url": "https://dt.ke.com",
+    "code": "140200",
+    "min_lat": 112.578379,
+    "max_lat": 114.568922,
+    "min_lon": 39.048278,
+    "max_lon": 40.739941
   },
   {
     "name": "运城",
-    "url": "https:///yuncheng.ke.com",
+    "url": "https://yuncheng.ke.com",
     "code": "140800",
     "min_lat": 110.229593,
     "max_lat": 112.081519,
@@ -1189,7 +1189,7 @@
   },
   {
     "name": "晋中",
-    "url": "https:///jz.ke.com",
+    "url": "https://jz.ke.com",
     "code": "140700",
     "min_lat": 111.412268,
     "max_lat": 114.139712,
@@ -1198,7 +1198,7 @@
   },
   {
     "name": "上海",
-    "url": "https:///sh.ke.com",
+    "url": "https://sh.ke.com",
     "code": "310000",
     "min_lat": 120.856804,
     "max_lat": 122.247149,
@@ -1207,7 +1207,7 @@
   },
   {
     "name": "济南",
-    "url": "https:///jn.ke.com",
+    "url": "https://jn.ke.com",
     "code": "370100",
     "min_lat": 116.226065,
     "max_lat": 117.975332,
@@ -1216,7 +1216,7 @@
   },
   {
     "name": "青岛",
-    "url": "https:///qd.ke.com",
+    "url": "https://qd.ke.com",
     "code": "370200",
     "min_lat": 119.514825,
     "max_lat": 121.017919,
@@ -1225,7 +1225,7 @@
   },
   {
     "name": "淄博",
-    "url": "https:///zb.ke.com",
+    "url": "https://zb.ke.com",
     "code": "370300",
     "min_lat": 117.550206,
     "max_lat": 118.522692,
@@ -1234,7 +1234,7 @@
   },
   {
     "name": "烟台",
-    "url": "https:///yt.ke.com",
+    "url": "https://yt.ke.com",
     "code": "370600",
     "min_lat": 119.558217,
     "max_lat": 121.934174,
@@ -1243,7 +1243,7 @@
   },
   {
     "name": "潍坊",
-    "url": "https:///wf.ke.com",
+    "url": "https://wf.ke.com",
     "code": "370700",
     "min_lat": 118.176284,
     "max_lat": 120.015209,
@@ -1252,7 +1252,7 @@
   },
   {
     "name": "青州",
-    "url": "https:///qingzhou.ke.com",
+    "url": "https://qingzhou.ke.com",
     "code": "370781",
     "min_lat": 118.176284,
     "max_lat": 118.776121,
@@ -1261,7 +1261,7 @@
   },
   {
     "name": "寿光",
-    "url": "https:///shouguang.ke.com",
+    "url": "https://shouguang.ke.com",
     "code": "370783",
     "min_lat": 118.544572,
     "max_lat": 119.121795,
@@ -1270,7 +1270,7 @@
   },
   {
     "name": "济宁",
-    "url": "https:///jining.ke.com",
+    "url": "https://jining.ke.com",
     "code": "370800",
     "min_lat": 115.870312,
     "max_lat": 117.596915,
@@ -1279,7 +1279,7 @@
   },
   {
     "name": "泰安",
-    "url": "https:///ta.ke.com",
+    "url": "https://ta.ke.com",
     "code": "370900",
     "min_lat": 116.048649,
     "max_lat": 117.999231,
@@ -1288,7 +1288,7 @@
   },
   {
     "name": "威海",
-    "url": "https:///weihai.ke.com",
+    "url": "https://weihai.ke.com",
     "code": "371000",
     "min_lat": 121.177558,
     "max_lat": 122.71596,
@@ -1297,7 +1297,7 @@
   },
   {
     "name": "日照",
-    "url": "https:///rz.fang.ke.com",
+    "url": "https://rz.fang.ke.com",
     "code": "371100",
     "min_lat": 118.601044,
     "max_lat": 119.666538,
@@ -1306,7 +1306,7 @@
   },
   {
     "name": "临沂",
-    "url": "https:///linyi.ke.com",
+    "url": "https://linyi.ke.com",
     "code": "371300",
     "min_lat": 117.418664,
     "max_lat": 119.203239,
@@ -1315,7 +1315,7 @@
   },
   {
     "name": "德州",
-    "url": "https:///dezhou.fang.ke.com",
+    "url": "https://dezhou.fang.ke.com",
     "code": "371400",
     "min_lat": 115.761379,
     "max_lat": 117.606557,
@@ -1324,7 +1324,7 @@
   },
   {
     "name": "菏泽",
-    "url": "https:///heze.ke.com",
+    "url": "https://heze.ke.com",
     "code": "371700",
     "min_lat": 114.819254,
     "max_lat": 116.408796,
@@ -1333,7 +1333,7 @@
   },
   {
     "name": "成都",
-    "url": "https:///cd.ke.com",
+    "url": "https://cd.ke.com",
     "code": "510100",
     "min_lat": 102.992886,
     "max_lat": 104.897532,
@@ -1342,7 +1342,7 @@
   },
   {
     "name": "攀枝花",
-    "url": "https:///pzh.ke.com",
+    "url": "https://pzh.ke.com",
     "code": "510400",
     "min_lat": 101.136471,
     "max_lat": 102.247366,
@@ -1351,7 +1351,7 @@
   },
   {
     "name": "泸州",
-    "url": "https:///luzhou.ke.com",
+    "url": "https://luzhou.ke.com",
     "code": "510500",
     "min_lat": 105.145137,
     "max_lat": 106.380582,
@@ -1360,7 +1360,7 @@
   },
   {
     "name": "德阳",
-    "url": "https:///dy.ke.com",
+    "url": "https://dy.ke.com",
     "code": "510600",
     "min_lat": 103.795433,
     "max_lat": 105.175253,
@@ -1369,7 +1369,7 @@
   },
   {
     "name": "绵阳",
-    "url": "https:///mianyang.ke.com",
+    "url": "https://mianyang.ke.com",
     "code": "510700",
     "min_lat": 103.748762,
     "max_lat": 105.726228,
@@ -1378,7 +1378,7 @@
   },
   {
     "name": "遂宁",
-    "url": "https:///sn.ke.com",
+    "url": "https://sn.ke.com",
     "code": "510900",
     "min_lat": 105.05934,
     "max_lat": 106.001273,
@@ -1387,7 +1387,7 @@
   },
   {
     "name": "内江",
-    "url": "https:///neijiang.ke.com",
+    "url": "https://neijiang.ke.com",
     "code": "511000",
     "min_lat": 104.269526,
     "max_lat": 105.443681,
@@ -1396,7 +1396,7 @@
   },
   {
     "name": "南充",
-    "url": "https:///nanchong.ke.com",
+    "url": "https://nanchong.ke.com",
     "code": "511300",
     "min_lat": 105.44075,
     "max_lat": 106.964968,
@@ -1405,7 +1405,7 @@
   },
   {
     "name": "眉山",
-    "url": "https:///ms.ke.com",
+    "url": "https://ms.ke.com",
     "code": "511400",
     "min_lat": 102.822879,
     "max_lat": 104.503933,
@@ -1414,7 +1414,7 @@
   },
   {
     "name": "宜宾",
-    "url": "https:///yibin.ke.com",
+    "url": "https://yibin.ke.com",
     "code": "511500",
     "min_lat": 103.61289,
     "max_lat": 105.358462,
@@ -1423,7 +1423,7 @@
   },
   {
     "name": "达州",
-    "url": "https:///dazhou.ke.com",
+    "url": "https://dazhou.ke.com",
     "code": "511700",
     "min_lat": 106.666102,
     "max_lat": 108.546712,
@@ -1432,7 +1432,7 @@
   },
   {
     "name": "雅安",
-    "url": "https:///yaan.ke.com",
+    "url": "https://yaan.ke.com",
     "code": "511800",
     "min_lat": 101.93598,
     "max_lat": 103.395135,
@@ -1441,7 +1441,7 @@
   },
   {
     "name": "巴中",
-    "url": "https:///bz.ke.com",
+    "url": "https://bz.ke.com",
     "code": "511900",
     "min_lat": 106.363495,
     "max_lat": 107.763942,
@@ -1450,7 +1450,7 @@
   },
   {
     "name": "资阳",
-    "url": "https:///ziyang.ke.com",
+    "url": "https://ziyang.ke.com",
     "code": "512000",
     "min_lat": 104.43537,
     "max_lat": 105.753844,
@@ -1459,7 +1459,7 @@
   },
   {
     "name": "凉山彝族自治州",
-    "url": "https:///liangshan.ke.com",
+    "url": "https://liangshan.ke.com",
     "code": "513400",
     "min_lat": 100.061499,
     "max_lat": 103.877419,
@@ -1468,7 +1468,7 @@
   },
   {
     "name": "乐山",
-    "url": "https:///leshan.ke.com",
+    "url": "https://leshan.ke.com",
     "code": "511100",
     "min_lat": 102.909046,
     "max_lat": 104.252118,
@@ -1477,7 +1477,7 @@
   },
   {
     "name": "广元",
-    "url": "https:///guangyuan.ke.com",
+    "url": "https://guangyuan.ke.com",
     "code": "510800",
     "min_lat": 104.616247,
     "max_lat": 106.776168,
@@ -1486,7 +1486,7 @@
   },
   {
     "name": "西安",
-    "url": "https:///xa.ke.com",
+    "url": "https://xa.ke.com",
     "code": "610100",
     "min_lat": 107.663753,
     "max_lat": 109.822432,
@@ -1495,7 +1495,7 @@
   },
   {
     "name": "宝鸡",
-    "url": "https:///baoji.ke.com",
+    "url": "https://baoji.ke.com",
     "code": "610300",
     "min_lat": 106.313336,
     "max_lat": 108.053717,
@@ -1504,7 +1504,7 @@
   },
   {
     "name": "咸阳",
-    "url": "https:///xianyang.ke.com",
+    "url": "https://xianyang.ke.com",
     "code": "610400",
     "min_lat": 107.651842,
     "max_lat": 109.180053,
@@ -1513,7 +1513,7 @@
   },
   {
     "name": "渭南",
-    "url": "https:///weinan.fang.ke.com",
+    "url": "https://weinan.fang.ke.com",
     "code": "610500",
     "min_lat": 108.964143,
     "max_lat": 110.609331,
@@ -1522,7 +1522,7 @@
   },
   {
     "name": "汉中",
-    "url": "https:///hanzhong.ke.com",
+    "url": "https://hanzhong.ke.com",
     "code": "610700",
     "min_lat": 105.491949,
     "max_lat": 108.284817,
@@ -1531,7 +1531,7 @@
   },
   {
     "name": "天津",
-    "url": "https:///tj.ke.com",
+    "url": "https://tj.ke.com",
     "code": "120000",
     "min_lat": 113.734766,
     "max_lat": 118.065611,
@@ -1540,16 +1540,16 @@
   },
   {
     "name": "乌鲁木齐",
-    "url": "https:///wlmq.ke.com",
-    "code": "650121",
+    "url": "https://wlmq.ke.com",
+    "code": "650100",
     "min_lat": 86.797891,
-    "max_lat": 88.129826,
-    "min_lon": 43.022979,
-    "max_lon": 43.858699
+    "max_lat": 88.974715,
+    "min_lon": 42.923366,
+    "max_lon": 45.002005
   },
   {
     "name": "昆明",
-    "url": "https:///km.ke.com",
+    "url": "https://km.ke.com",
     "code": "530100",
     "min_lat": 102.171088,
     "max_lat": 103.67025,
@@ -1558,34 +1558,34 @@
   },
   {
     "name": "丽江",
-    "url": "https:///lj.fang.ke.com",
+    "url": "https://lj.fang.ke.com",
     "code": "530700",
-    "min_lat": 100.000366,
-    "max_lat": 99.998981,
+    "min_lat": 99.383373,
+    "max_lat": 101.513619,
     "min_lon": 25.98514,
     "max_lon": 27.924198
   },
   {
     "name": "西双版纳傣族自治州",
-    "url": "https:///xsbn.ke.com",
+    "url": "https://xsbn.ke.com",
     "code": "532800",
-    "min_lat": 100.001397,
-    "max_lat": 99.999861,
+    "min_lat": 99.944208,
+    "max_lat": 101.835428,
     "min_lon": 21.14177,
     "max_lon": 22.594469
   },
   {
     "name": "大理",
-    "url": "https:///dali.ke.com",
+    "url": "https://dali.ke.com",
     "code": "532901",
-    "min_lat": 100.001228,
-    "max_lat": 99.999859,
+    "min_lat": 99.979246,
+    "max_lat": 100.438103,
     "min_lon": 25.421993,
     "max_lon": 26.074966
   },
   {
     "name": "杭州",
-    "url": "https:///hz.ke.com",
+    "url": "https://hz.ke.com",
     "code": "330100",
     "min_lat": 118.344933,
     "max_lat": 120.721945,
@@ -1594,7 +1594,7 @@
   },
   {
     "name": "宁波",
-    "url": "https:///nb.ke.com",
+    "url": "https://nb.ke.com",
     "code": "330200",
     "min_lat": 120.867041,
     "max_lat": 122.279016,
@@ -1603,7 +1603,7 @@
   },
   {
     "name": "温州",
-    "url": "https:///wz.ke.com",
+    "url": "https://wz.ke.com",
     "code": "330300",
     "min_lat": 119.625321,
     "max_lat": 121.272939,
@@ -1612,7 +1612,7 @@
   },
   {
     "name": "嘉兴",
-    "url": "https:///jx.ke.com",
+    "url": "https://jx.ke.com",
     "code": "330400",
     "min_lat": 120.295342,
     "max_lat": 121.340278,
@@ -1621,7 +1621,7 @@
   },
   {
     "name": "湖州",
-    "url": "https:///huzhou.ke.com",
+    "url": "https://huzhou.ke.com",
     "code": "330500",
     "min_lat": 119.236936,
     "max_lat": 120.489072,
@@ -1630,7 +1630,7 @@
   },
   {
     "name": "绍兴",
-    "url": "https:///sx.ke.com",
+    "url": "https://sx.ke.com",
     "code": "330600",
     "min_lat": 119.888597,
     "max_lat": 121.231576,
@@ -1639,7 +1639,7 @@
   },
   {
     "name": "金华",
-    "url": "https:///jh.ke.com",
+    "url": "https://jh.ke.com",
     "code": "330700",
     "min_lat": 119.228702,
     "max_lat": 120.783607,
@@ -1648,7 +1648,7 @@
   },
   {
     "name": "义乌",
-    "url": "https:///yw.ke.com",
+    "url": "https://yw.ke.com",
     "code": "330782",
     "min_lat": 119.819712,
     "max_lat": 120.282439,
@@ -1657,7 +1657,7 @@
   },
   {
     "name": "衢州",
-    "url": "https:///quzhou.fang.ke.com",
+    "url": "https://quzhou.fang.ke.com",
     "code": "330800",
     "min_lat": 118.028279,
     "max_lat": 119.345556,
@@ -1666,7 +1666,7 @@
   },
   {
     "name": "舟山",
-    "url": "https:///zhoushan.fang.ke.com",
+    "url": "https://zhoushan.fang.ke.com",
     "code": "330900",
     "min_lat": 121.57112,
     "max_lat": 122.949508,
@@ -1675,7 +1675,7 @@
   },
   {
     "name": "台州",
-    "url": "https:///taizhou.ke.com",
+    "url": "https://taizhou.ke.com",
     "code": "331000",
     "min_lat": 120.289981,
     "max_lat": 121.945198,

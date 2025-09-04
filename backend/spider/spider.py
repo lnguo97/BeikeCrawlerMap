@@ -9,35 +9,23 @@ from itertools import product
 
 import requests
 from bs4 import BeautifulSoup
-from sqlalchemy import create_engine, Engine
+from sqlalchemy import create_engine, Engine, func
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import sessionmaker
 
+from .database import DatabaseService
+from .constant import USER_AGENT, COMMUNITY_LIST_URL, HOUSE_LIST_URL
 from .models import (
     Base, City, Community, CommunityProgress, House, HouseProgress
 )
 
 
-import logging
-from pathlib import Path
-from datetime import datetime
-from sqlalchemy.orm import sessionmaker
-
-
 class BeikeMapSpider:
-    def __init__(self, city_code: str, Session: sessionmaker) -> None:
+    def __init__(self) -> None:
         self.ds = datetime.today().strftime(r'%Y%m%d')
-        self.db_session = Session()
-        self.city_code = city_code
-        self.headers = {
-            'user-agent': (
-                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
-                'AppleWebKit/537.36 (KHTML, like Gecko) '
-                'Chrome/138.0.0.0 '
-                'Safari/537.36'
-            )
-        }
-        self.logger = logging.getLogger(f'spider_{self.city_code}_{self.ds}')
+        self.db_service = DatabaseService()
+        self.headers = {'user-agent': USER_AGENT}
+        self.logger = logging.getLogger(f'spider_{self.ds}')
         self.logger.setLevel(logging.INFO)
 
     def __enter__(self):
@@ -58,7 +46,12 @@ class BeikeMapSpider:
         for handler in self.logger.handlers:
             self.logger.removeHandler(handler)
             handler.close()
-        self.db_session.close()
+
+    @staticmethod
+    def float_range(start, end, step, decimal=2):
+        while start < end:
+            yield round(start, decimal)
+            start += step
         
     def get_community_list_url(
         self,
@@ -76,89 +69,81 @@ class BeikeMapSpider:
             'maxLongitude': max_lon,
             'minLongitude': min_lon,
         }
-        base_url = (
-            'https://map.ke.com/proxyApi/i.c-pc-webapi.ke.com/map/bubblelist'
-        )
         param_str = '&'.join([f'{k}={v}' for k, v in params.items()])
-        return base_url + '?' + param_str
+        return COMMUNITY_LIST_URL + '?' + param_str
     
     def init_community_progress(self):
-        def float_range(start, end, step, decimal=2):
-            while start < end:
-                yield round(start, decimal)
-                start += step
-
-        if not (
-            self.db_session
-            .query(CommunityProgress)
-            .filter(CommunityProgress.ds == self.ds)
-            .filter(CommunityProgress.city_code == self.city_code)
-            .first()
-        ):
-            step = 0.05
-            lat_range = float_range(self.min_lat, self.max_lat, step)
-            lon_range = float_range(self.min_lon, self.max_lon, step)
+        with self.Session() as session:
+            if (
+                session
+                .query(CommunityProgress.id)
+                .filter(CommunityProgress.ds == self.ds)
+                .filter(CommunityProgress.city_code == self.city_code)
+                .count()
+            ) > 0:
+                return
+        step = 0.05
+        lat_range = self.float_range(self.min_lat, self.max_lat, step)
+        lon_range = self.float_range(self.min_lon, self.max_lon, step)
+        with self.Session() as session:
             for lat, lon in product(lat_range, lon_range):
-                self.db_session.add(
+                session.add(
                     CommunityProgress(
                         ds=self.ds,
                         city_code=self.city_code,
-                        min_lat=lat, max_lat=round(lat + step, 2),
-                        min_lon=lon, max_lon=round(lon + step, 2),
+                        url=self.get_community_list_url(
+                            min_lat=lat,
+                            max_lat=round(lat + step, 2),
+                            min_lon=lon,
+                            max_lon=round(lon + step, 2),
+                        )
                     )
                 )
-            self.db_session.commit()
+            session.commit()
         self.logger.info('Community progress initialized')
 
     def crawl_community_list(self):
         if self.interrupted:
             return
-        progresses = (
-            self.db_session
-            .query(CommunityProgress)
-            .filter(CommunityProgress.ds == self.ds)
-            .filter(CommunityProgress.city_code == self.city_code)
-            .filter(CommunityProgress.is_finished == 0)
-            .all()
-        )
-        if not progresses:
-            self.logger.info(f'All communities are crawled')
-            return
-        for progress in progresses:
-            self.logger.info(
-                f'Crawling community list, '
-                f'latitute {progress.min_lat}-{progress.max_lat}, '
-                f'longitude {progress.min_lon}-{progress.max_lon}'
+        with self.Session() as session:
+            progresses = (
+                session
+                .query(CommunityProgress)
+                .filter(CommunityProgress.ds == self.ds)
+                .filter(CommunityProgress.city_code == self.city_code)
+                .filter(CommunityProgress.is_finished == 0)
+                .order_by(CommunityProgress.id)
+                .all()
             )
-            res = requests.get(
-                url=self.get_community_list_url(
-                    min_lat=progress.min_lat,
-                    max_lat=progress.max_lat,
-                    min_lon=progress.min_lon,
-                    max_lon=progress.max_lon,
-                ),
-                headers=self.headers
-            )
-            res.raise_for_status()
-            data = res.json()['data']
-            if 'bubbleList' in data:
-                for bubble in data['bubbleList']:
-                    if (
-                        self.db_session.query(Community)
-                        .filter(Community.id == bubble['id'])
-                        .filter(Community.ds == self.ds)
-                        .filter(Community.city_code == self.city_code)
-                        .first()
-                    ):
-                        continue
-                    self.db_session.add(Community(
-                        **bubble, ds=self.ds, city_code=self.city_code
-                    ))
-            progress.is_finished = True
-            self.db_session.commit()
-            if self.interrupted:
+            if not progresses:
+                self.logger.info(f'All communities are crawled')
                 return
-            time.sleep(0.1)
+            for progress in progresses:
+                if self.interrupted:
+                    return
+                self.logger.info(
+                    f'Crawling community list '
+                    f'({progress.id}/{progresses[-1].id})'
+                )
+                res = requests.get(progress.url, headers=self.headers)
+                res.raise_for_status()
+                data = res.json()['data']
+                if 'bubbleList' in data:
+                    for bubble in data['bubbleList']:
+                        if (
+                            session.query(Community.id)
+                            .filter(Community.id == bubble['id'])
+                            .filter(Community.ds == self.ds)
+                            .filter(Community.city_code == self.city_code)
+                            .first()
+                        ):
+                            continue
+                        session.add(Community(
+                            **bubble, ds=self.ds, city_code=self.city_code
+                        ))
+                progress.is_finished = True
+                session.commit()
+                time.sleep(0.1)
 
     def crawl_community_detail(self):
         if self.interrupted:
